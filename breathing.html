@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guided Breathing Studio - Solace Sphere</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <img src="images/logo.png" alt="Solace Sphere logo" class="logo">
+  <nav>
+    <a href="landing page.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="resources.html">Resources</a>
+    <a href="personal toolbox.html">Personal Toolbox</a>
+    <a href="community.html">Community</a>
+    <a href="chatbot.html">Chatbot</a>
+    <a href="signup.html" class="signup-link">Sign Up</a>
+    <a href="profile.html" class="profile-link">Profile</a>
+  </nav>
+</header>
+
+<section style="background: #5f8fe8; padding: 60px 40px;">
+  <a href="personal toolbox.html" style="display: inline-block; color: #fff; text-decoration: none; font-weight: 700; font-size: 18px; margin-bottom: 20px;">← Back to Toolbox</a>
+  
+  <div style="max-width: 900px; margin: 0 auto;">
+
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 40px;">
+      <div style="width: 60px; height: 60px; border-radius: 50%; background: #f3d9c8; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; margin-bottom: 14px;">
+        SPACE<br>SEEKER
+      </div>
+      <h1 style="margin: 10px 0; font-size: 36px;">Guided Breathing Studio</h1>
+      <img src="images/guidedbreathe.png" alt="Guided breathing" style="width: 160px; height: 100px; border-radius: 16px; margin: 14px auto; object-fit: cover;">
+      <p style="font-size: 16px;">
+        Select a technique below to calm your mind and body.
+      </p>
+    </div>
+
+    <!-- Technique Selector -->
+    <div class="breathing-panel">
+      <div class="breathing-technique-list">
+        <button type="button" class="breathing-technique active" data-technique="box" onclick="renderTechnique('box')">
+          <strong>Box Breathing</strong>
+          <span class="breathing-tag">Focus</span>
+        </button>
+        <button type="button" class="breathing-technique" data-technique="478" onclick="renderTechnique('478')">
+          <strong>4-7-8 Breathing</strong>
+          <span class="breathing-tag">Sleep</span>
+        </button>
+        <button type="button" class="breathing-technique" data-technique="coherent" onclick="renderTechnique('coherent')">
+          <strong>Coherent Breathing</strong>
+          <span class="breathing-tag">Balance</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Technique Information -->
+    <div class="breathing-panel breathing-info-panel">
+      <h2 style="margin-top: 0;">Technique Information</h2>
+      <h3 id="techniqueTitle">Box Breathing</h3>
+      <p id="techniqueDescription" class="breathing-info-text">
+        A powerful technique used to relieve stress and improve concentration by creating a steady, even breathing rhythm.
+      </p>
+      <p id="techniqueBenefit" class="breathing-benefit"><strong>Best for:</strong> Focus, calm, and resetting after stress.</p>
+      <div class="breathing-pattern-box">
+        <strong>The Pattern</strong>
+        <ul id="techniquePattern" class="breathing-pattern-list">
+          <li>Inhale through nose (4s)</li>
+          <li>Hold breath (4s)</li>
+          <li>Exhale through mouth (4s)</li>
+          <li>Hold empty breath (4s)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Duration Selector -->
+    <div style="text-align: center; margin-bottom: 40px;">
+      <div class="duration-row" style="margin-bottom: 28px;">
+        <strong style="margin-right: 16px;">Duration:</strong>
+        <button type="button" class="duration-btn active" data-minutes="1">1 Min</button>
+        <button type="button" class="duration-btn" data-minutes="3">3 Min</button>
+        <button type="button" class="duration-btn" data-minutes="5">5 Min</button>
+      </div>
+
+      <div id="breathingCircle" class="breathing-circle">
+        Ready?
+      </div>
+
+      <div id="countdownClock" class="countdown-clock">
+        0:00
+      </div>
+
+      <div>
+        <button id="startBreathingBtn" class="start-session-btn" type="button">
+          Start Session
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+<script src="auth.js"></script>
+  <script>console.log('breathing script loaded');</script>
+  <script>
+  const breathingTechniques = {
+    box: {
+      title: "Box Breathing",
+      description: "A steady four-part breathing practice that helps calm the nervous system, sharpen concentration, and reset your breathing rhythm when stress builds up.",
+      benefit: "Focus, calm, and stress reset.",
+      pattern: [
+        "Inhale through nose (4s)",
+        "Hold breath (4s)",
+        "Exhale through mouth (4s)",
+        "Hold empty breath (4s)"
+      ],
+      phases: [
+        { label: "Inhale", seconds: 4 },
+        { label: "Hold", seconds: 4 },
+        { label: "Exhale", seconds: 4 },
+        { label: "Hold", seconds: 4 }
+      ]
+    },
+    "478": {
+      title: "4-7-8 Breathing",
+      description: "A relaxing breathing technique that lengthens the exhale and encourages the body to slow down. It is often used before sleep or whenever you want to settle racing thoughts.",
+      benefit: "Sleep, relaxation, and winding down.",
+      pattern: [
+        "Inhale quietly through the nose (4s)",
+        "Hold the breath gently (7s)",
+        "Exhale slowly through the mouth (8s)",
+        "Repeat for several calm cycles"
+      ],
+      phases: [
+        { label: "Inhale", seconds: 4 },
+        { label: "Hold", seconds: 7 },
+        { label: "Exhale", seconds: 8 }
+      ]
+    },
+    coherent: {
+      title: "Coherent Breathing",
+      description: "A smooth, balanced breathing style that usually uses an even inhale and exhale. It supports emotional balance and can help steady heart rate and tension levels.",
+      benefit: "Balance, grounding, and steady calm.",
+      pattern: [
+        "Inhale softly through the nose (5s)",
+        "Exhale softly through the nose (5s)",
+        "Keep the breath smooth and even",
+        "Aim for about 5 breaths per minute"
+      ],
+      phases: [
+        { label: "Inhale", seconds: 5 },
+        { label: "Exhale", seconds: 5 }
+      ]
+    }
+  };
+
+  const techniqueButtons = document.querySelectorAll(".breathing-technique");
+  const durationButtons = document.querySelectorAll(".duration-btn");
+  const techniqueTitle = document.getElementById("techniqueTitle");
+  const techniqueDescription = document.getElementById("techniqueDescription");
+  const techniqueBenefit = document.getElementById("techniqueBenefit");
+  const techniquePattern = document.getElementById("techniquePattern");
+  const countdownClock = document.getElementById("countdownClock");
+  const breathingCircle = document.getElementById("breathingCircle");
+  const startBreathingBtn = document.getElementById("startBreathingBtn");
+
+  let selectedTechnique = "box";
+  let selectedMinutes = 1;
+  let countdownInterval = null;
+  let previewTechnique = null;
+
+  function renderTechnique(key) {
+    const technique = breathingTechniques[key];
+    if (!technique) {
+      return;
+    }
+    // set the selected technique and update UI
+    selectedTechnique = key;
+    techniqueTitle.textContent = technique.title;
+    techniqueDescription.textContent = technique.description;
+    techniqueBenefit.innerHTML = "<strong>Best for:</strong> " + technique.benefit;
+    techniquePattern.innerHTML = technique.pattern.map(function (step) {
+      return "<li>" + step + "</li>";
+    }).join("");
+
+    techniqueButtons.forEach(function (button) {
+      button.classList.toggle("active", button.dataset.technique === key);
+    });
+
+    breathingCircle.textContent = "Ready?";
+  }
+
+  function formatTime(totalSeconds) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return minutes + ":" + String(seconds).padStart(2, "0");
+  }
+
+  function getCurrentPhase(phases, elapsedSeconds) {
+    const cycleLength = phases.reduce(function (sum, phase) {
+      return sum + phase.seconds;
+    }, 0);
+    const cyclePosition = elapsedSeconds % cycleLength;
+    let runningTotal = 0;
+
+    for (const phase of phases) {
+      runningTotal += phase.seconds;
+      if (cyclePosition < runningTotal) {
+        return phase.label;
+      }
+    }
+
+    return phases[0].label;
+  }
+
+  function stopCountdown(resetText) {
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+    }
+    countdownClock.classList.remove("counting");
+    breathingCircle.classList.remove("counting");
+    if (resetText) {
+      breathingCircle.classList.remove("complete");
+    }
+    startBreathingBtn.textContent = "Start Session";
+    if (resetText) {
+      breathingCircle.textContent = "Ready?";
+      countdownClock.textContent = formatTime(selectedMinutes * 60);
+    }
+  }
+
+  techniqueButtons.forEach(function (button) {
+    // Click selects immediately and clears any preview
+    button.addEventListener("click", function () {
+      const key = button.dataset.technique;
+      console.log('Technique clicked:', key);
+      stopCountdown(true);
+      previewTechnique = null;
+      renderTechnique(key);
+    });
+
+    // Hover preview: set a previewTechnique and render it; mouseleave restores selectedTechnique
+    button.addEventListener('mouseenter', function () {
+      const key = button.dataset.technique;
+      const tech = breathingTechniques[key];
+      if (!tech) return;
+      previewTechnique = key;
+      // render preview without changing selectedTechnique
+      techniqueTitle.textContent = tech.title;
+      techniqueDescription.textContent = tech.description;
+      techniqueBenefit.innerHTML = "<strong>Best for:</strong> " + tech.benefit;
+      techniquePattern.innerHTML = tech.pattern.map(function (step) { return "<li>" + step + "</li>"; }).join("");
+      button.classList.add('hover');
+    });
+    button.addEventListener('mouseleave', function () {
+      button.classList.remove('hover');
+      // if there's no persistent selection change, restore the selected technique
+      if (previewTechnique !== null) previewTechnique = null;
+      // always restore selected technique (in case preview changed UI)
+      renderTechnique(selectedTechnique);
+    });
+  });
+
+  durationButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      selectedMinutes = Number(button.dataset.minutes);
+      durationButtons.forEach(function (durationButton) {
+        durationButton.classList.remove("active");
+      });
+      button.classList.add("active");
+      countdownClock.textContent = formatTime(selectedMinutes * 60);
+      if (!countdownInterval) {
+        breathingCircle.textContent = "Ready?";
+      }
+    });
+  });
+
+  startBreathingBtn.addEventListener("click", function () {
+    if (countdownInterval) {
+      stopCountdown(true);
+      return;
+    }
+
+    const technique = breathingTechniques[selectedTechnique];
+    let totalSeconds = selectedMinutes * 60;
+    let elapsed = 0;
+
+    countdownClock.textContent = formatTime(totalSeconds);
+    countdownClock.classList.add("counting");
+    breathingCircle.classList.add("counting");
+    breathingCircle.textContent = technique.phases[0].label;
+    startBreathingBtn.textContent = "Stop Session";
+
+    countdownInterval = setInterval(function () {
+      totalSeconds -= 1;
+      elapsed += 1;
+
+      if (totalSeconds <= 0) {
+        countdownClock.textContent = "0:00";
+        breathingCircle.textContent = "Complete";
+        breathingCircle.classList.add("complete");
+        stopCountdown(false);
+        startBreathingBtn.textContent = "Start Session";
+        return;
+      }
+
+      countdownClock.textContent = formatTime(totalSeconds);
+      breathingCircle.textContent = getCurrentPhase(technique.phases, elapsed);
+    }, 1000);
+  });
+
+  renderTechnique(selectedTechnique);
+  countdownClock.textContent = formatTime(selectedMinutes * 60);
+  // expose to global for inline onclick fallbacks
+  window.renderTechnique = renderTechnique;
+  window.startBreathingSession = function() { startBreathingBtn.click(); };
+</script>
+<a href="chatbot.html" class="floating-chatbot-button">💬 AI Chatbot</a>
+</body>
+</html>

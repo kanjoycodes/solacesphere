@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solace Sphere - Mental Wellness Platform</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- ================= LANDING PAGE ================= -->
+<header>
+  <img src="images/logo.png" alt="Solace Sphere logo" class="logo">
+  <nav>
+    <a href="landing page.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    
+    <!-- Dropdown Menu for Support & Tools -->
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Support & Tools</a>
+      <div class="dropdown-menu">
+        <a href="resources.html">Resources</a>
+        <a href="personal toolbox.html">Personal Toolbox</a>
+        <a href="community.html">Community</a>
+      </div>
+    </div>
+    
+    <a href="appointment.html">Appointments</a>
+    <a href="chatbot.html">Chatbot</a>
+    <a href="signup.html" class="signup-link">Sign Up</a>
+    <a href="profile.html" class="profile-link">Profile</a>
+  </nav>
+</header>
+<section class="hero">
+  <div>
+    <h1>Your Safe Space for Mental Wellness</h1>
+    <p>Explore tools, resources, and support designed to help you heal and grow.</p>
+    <button class="btn">Get Started</button>
+  </div>
+  <img src="images/1.png" alt="Solace Sphere illustration" class="hero-logo">
+</section>
+
+<section>
+  <div class="cards">
+    <div class="card">
+      <img src="images/self help.png" alt="Self-Help Tools" class="card-icon" style="width: 60px; height: 60px; object-fit: cover; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;">
+      <h3>Self-Help Tools</h3>
+      <p>Guided exercises, affirmations, and grounding tools.</p>
+    </div>
+    <div class="card">
+      <img src="images/support.png" alt="Anonymous Support" class="card-icon" style="width: 60px; height: 60px; object-fit: cover; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;">
+      <h3>Anonymous Support</h3>
+      <p>Reach out privately for emotional support and guidance.</p>
+    </div>
+    <div class="card">
+      <img src="images/resources.png" alt="Wellness Resources" class="card-icon" style="width: 60px; height: 60px; object-fit: cover; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;">
+      <h3>Wellness Resources</h3>
+      <p>Articles, videos, and mental health education.</p>
+    </div>
+  </div>
+</section>
+
+<div class="note">Take a deep breath. You’re doing your best.</div>
+<a href="chatbot.html" class="floating-chatbot-button">💬 AI Chatbot</a>
+<script>
+  // Handle dropdown toggle click
+  document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+    toggle.addEventListener('click', function(e) {
+      e.preventDefault();
+    });
+  });
+</script></body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Solace Sphere</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- ================= DASHBOARD ================= -->
+<header>
+  <img src="images/logo.png" alt="Solace Sphere logo" class="logo">
+  <nav>
+    <a href="landing page.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    
+    <!-- Dropdown Menu for Support & Tools -->
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Support & Tools</a>
+      <div class="dropdown-menu">
+        <a href="resources.html">Resources</a>
+        <a href="personal toolbox.html">Personal Toolbox</a>
+        <a href="community.html">Community</a>
+      </div>
+    </div>
+    
+    <a href="appointment.html">Appointments</a>
+    <a href="chatbot.html">Chatbot</a>
+    <a href="signup.html" class="signup-link">Sign Up</a>
+    <a href="profile.html" class="profile-link">Profile</a>
+  </nav>
+</header>
+
+<section class="dashboard-top">
+  <div>
+    <h1 id="dashboardGreeting">Welcome back, Joy.</h1>
+    <p style="margin-top:10px;">We’re glad you’re here today</p>
+  </div>
+  <img src="images/dashboard.png" alt="Dashboard illustration" class="dashboard-illustration">
+</section>
+
+<section>
+  <h2 style="text-align:center;">Mental Wellness Snapshot</h2>
+  <div class="cards">
+    <a href="mood.html" class="card dashboard-card mood-card-link">
+      <div class="card-label">MOOD</div>
+      <div class="emoji-display">😊 😐 😠</div>
+    </a>
+    <div class="card dashboard-card">
+      <div class="card-label">STRESS</div>
+      <div class="stress-bar">
+        <div id="stressBarFill" class="stress-bar-fill stress-medium-level"></div>
+      </div>
+      <div class="stress-labels">Low • Medium • High</div>
+      <div class="stress-control-row">
+        <label for="stressLevel" class="stress-control-label">Set level:</label>
+        <select id="stressLevel" class="stress-select">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+    </div>
+    <div class="card dashboard-card">
+      <div class="card-label">JOURNAL STREAK</div>
+      <div class="streak-display">🔥 2 Days</div>
+    </div>
+    <div class="card dashboard-card">
+      <div class="card-label">SLEEP</div>
+      <div id="sleepDisplay" class="sleep-display">🌙 8 Hours</div>
+      <div class="sleep-control-row">
+        <input id="sleepHoursInput" class="sleep-input" type="number" min="0" max="24" step="0.5" value="8" aria-label="Hours slept last night">
+        <button id="saveSleepBtn" class="sleep-save-btn" type="button">Log Sleep</button>
+      </div>
+      <p id="sleepProgressNote" class="sleep-note">Track the hours you slept last night.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 style="text-align:center;">Your Tools</h2>
+  <div class="tools-grid">
+    <a href="breathing.html" class="tool-pill">🧘 Guided Breathing</a>
+    <a href="mood.html" class="tool-pill">📊 Mood & Habit Tracker</a>
+    <a href="journal.html" class="tool-pill">📖 Journalling</a>
+    <a href="affirmations.html" class="tool-pill">💬 Affirmations</a>
+  </div>
+</section>
+<!-- ================= RECOMMENDED ================= -->
+<section>
+  <h2 style="text-align:center;">Recommended For You</h2>
+  <div class="cards">
+    <a href="resources.html?resource=20" class="card recommend-card recommended-resource-link">
+      <img src="images/rec1.png" alt="Stress reduction illustration">
+      <h3>6 ways to reduce stress</h3>
+      <p>Watch our tutorial on managing stress</p>
+      <span>Read more →</span>
+    </a>
+
+    <a href="resources.html?resource=5" class="card recommend-card recommended-resource-link">
+      <img src="images/rec2.png" alt="Understanding anxiety illustration">
+      <h3>Understanding Anxiety</h3>
+      <p>Several techniques to manage worry.</p>
+      <span>Read more →</span>
+    </a>
+
+    <a href="resources.html?resource=27" class="card recommend-card recommended-resource-link">
+      <img src="images/rec3.png" alt="Self-care illustration">
+      <h3>Self-care Tips</h3>
+      <p>Small steps for mental wellness.</p>
+      <span>Read more →</span>
+    </a>
+  </div>
+</section>
+<script>
+  const stressLevelSelect = document.getElementById("stressLevel");
+  const stressBarFill = document.getElementById("stressBarFill");
+  const dashboardGreeting = document.getElementById("dashboardGreeting");
+  const sleepDisplay = document.getElementById("sleepDisplay");
+  const sleepHoursInput = document.getElementById("sleepHoursInput");
+  const saveSleepBtn = document.getElementById("saveSleepBtn");
+  const sleepProgressNote = document.getElementById("sleepProgressNote");
+  const sleepStorageKey = "solaceSleepRecords";
+
+  let sleepRecords = JSON.parse(localStorage.getItem(sleepStorageKey) || "[]");
+
+  function saveSleepRecords() {
+    localStorage.setItem(sleepStorageKey, JSON.stringify(sleepRecords));
+  }
+
+  function formatSleepHours(hours) {
+    const numericHours = Number(hours);
+    return Number.isInteger(numericHours) ? String(numericHours) : numericHours.toFixed(1);
+  }
+
+  function getLatestSleepRecord() {
+    if (!Array.isArray(sleepRecords) || sleepRecords.length === 0) {
+      return null;
+    }
+
+    return sleepRecords[sleepRecords.length - 1];
+  }
+
+  function updateSleepCard() {
+    const latestRecord = getLatestSleepRecord();
+
+    if (!latestRecord) {
+      if (sleepDisplay) {
+        sleepDisplay.textContent = "🌙 8 Hours";
+      }
+      if (sleepProgressNote) {
+        sleepProgressNote.textContent = "Track the hours you slept last night.";
+      }
+      return;
+    }
+
+    if (sleepDisplay) {
+      sleepDisplay.textContent = "🌙 " + formatSleepHours(latestRecord.hours) + " Hours";
+    }
+
+    if (sleepProgressNote) {
+      const sleepDate = new Date(latestRecord.date);
+      sleepProgressNote.textContent = "Last logged: " + sleepDate.toLocaleDateString();
+    }
+  }
+
+  if (saveSleepBtn && sleepHoursInput) {
+    saveSleepBtn.addEventListener("click", function () {
+      const hours = Number.parseFloat(sleepHoursInput.value);
+
+      if (!Number.isFinite(hours) || hours < 0 || hours > 24) {
+        if (sleepProgressNote) {
+          sleepProgressNote.textContent = "Enter a sleep time between 0 and 24 hours.";
+        }
+        return;
+      }
+
+      sleepRecords.push({
+        hours: Math.round(hours * 10) / 10,
+        date: new Date().toISOString()
+      });
+
+      saveSleepRecords();
+      updateSleepCard();
+    });
+  }
+
+  updateSleepCard();
+
+  if (stressLevelSelect && stressBarFill) {
+    stressLevelSelect.addEventListener("change", function () {
+      stressBarFill.classList.remove("stress-low-level", "stress-medium-level", "stress-high-level");
+
+      if (this.value === "low") {
+        stressBarFill.classList.add("stress-low-level");
+      } else if (this.value === "high") {
+        stressBarFill.classList.add("stress-high-level");
+      } else {
+        stressBarFill.classList.add("stress-medium-level");
+      }
+    });
+  }
+
+  try {
+    const storedProfile = JSON.parse(localStorage.getItem("solaceUserProfile") || "null");
+    const displayName = storedProfile && (storedProfile.displayName || storedProfile.name);
+    if (dashboardGreeting && displayName) {
+      dashboardGreeting.textContent = "Welcome back, " + displayName + ".";
+    }
+  } catch (error) {
+    // Keep default greeting if no profile exists.
+  }
+</script>
+<a href="chatbot.html" class="floating-chatbot-button">💬 AI Chatbot</a>
+<script>
+  // Handle dropdown toggle click
+  document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+    toggle.addEventListener('click', function(e) {
+      e.preventDefault();
+    });
+  });
+</script>
+<script src="auth.js"></script>
+</body>
+</html>

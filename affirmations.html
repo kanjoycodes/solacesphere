@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Affirmations - Solace Sphere</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+    <img src="images/logo.png" alt="Solace Sphere logo" class="logo">
+  <nav>
+    <a href="landing page.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="resources.html">Resources</a>
+    <a href="personal toolbox.html">Personal Toolbox</a>
+    <a href="community.html">Community</a>
+    <a href="chatbot.html">Chatbot</a>
+    <a href="signup.html" class="signup-link">Sign Up</a>
+    <a href="profile.html" class="profile-link">Profile</a>
+  </nav>
+</header>
+
+<section class="affirmations-section">
+  <a href="personal toolbox.html" style="display: inline-block; color: #fff; text-decoration: none; font-weight: 700; font-size: 18px; margin: 20px 0 20px 40px;">← Back to Toolbox</a>
+
+    <div class="affirmations-container">
+
+        <!-- Header -->
+        <div class="affirmations-header">
+
+            <h1 class="affirmations-title">
+                Daily Affirmations
+            </h1>
+
+            <img src="images/affirmations.jfif" alt="Daily affirmations" class="affirmations-graphic">
+
+            <p class="affirmations-intro">
+                Shift your mindset. Choose thoughts that serve your well-being.
+            </p>
+        </div>
+
+        <!-- Selection Header -->
+        <div class="selection-header">
+            <div>
+                <strong id="affirmationsViewTitle">TODAY'S SELECTION</strong>
+                <p id="affirmationsViewSubtitle" class="affirmations-view-subtitle">Selected for today using your saved interactions and favorites.</p>
+            </div>
+
+            <div class="selection-actions">
+                <div class="favorites-indicator">
+                    <span class="heart-icon">♥</span>
+                    <span id="favoritesCountText">0 Favorites Saved</span>
+                </div>
+                <div class="affirmation-toggle-group">
+                    <button type="button" id="showTodayBtn" class="affirmation-toggle-btn active">Today's Selection</button>
+                    <button type="button" id="showFavoritesBtn" class="affirmation-toggle-btn">View Favorites</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Affirmation List -->
+        <div id="affirmationList" class="affirmation-list"></div>
+        <p id="emptyFavoritesMessage" class="empty-favorites-message" hidden>No favorite affirmations yet. Tap the heart on any affirmation to save it here.</p>
+
+    </div>
+</section>
+<script src="auth.js"></script>
+<script>
+  const affirmationPool = [
+    { id: 1, category: "self-worth", text: "I am worthy of love, belonging, and joy." },
+    { id: 2, category: "growth", text: "My past does not define my future. I am free to choose a new path." },
+    { id: 3, category: "confidence", text: "I choose to be proud of myself and the progress I have made." },
+    { id: 4, category: "calm", text: "I release the need to control things outside of my influence." },
+    { id: 5, category: "calm", text: "Every breath I take brings me deeper into peace and calm." },
+    { id: 6, category: "joy", text: "My happiness is my responsibility, and I embrace it fully." },
+    { id: 7, category: "self-worth", text: "I deserve kindness from myself as much as from others." },
+    { id: 8, category: "confidence", text: "I can handle today one step at a time." },
+    { id: 9, category: "growth", text: "Each challenge is helping me grow stronger and wiser." },
+    { id: 10, category: "calm", text: "Peace begins in my body, my breath, and my thoughts." },
+    { id: 11, category: "joy", text: "I allow small moments of joy to brighten my day." },
+    { id: 12, category: "rest", text: "Rest is productive when it helps me heal and recharge." },
+    { id: 13, category: "rest", text: "I give myself permission to slow down without guilt." },
+    { id: 14, category: "confidence", text: "My voice matters and I can express myself clearly." },
+    { id: 15, category: "self-worth", text: "I am enough exactly as I am while still growing." }
+  ];
+
+  const storageKeys = {
+    favorites: "solaceAffirmationFavorites",
+    interactions: "solaceAffirmationInteractions"
+  };
+
+  const affirmationList = document.getElementById("affirmationList");
+  const favoritesCountText = document.getElementById("favoritesCountText");
+  const emptyFavoritesMessage = document.getElementById("emptyFavoritesMessage");
+  const showTodayBtn = document.getElementById("showTodayBtn");
+  const showFavoritesBtn = document.getElementById("showFavoritesBtn");
+  const affirmationsViewTitle = document.getElementById("affirmationsViewTitle");
+  const affirmationsViewSubtitle = document.getElementById("affirmationsViewSubtitle");
+
+  let currentView = "today";
+  let favoriteIds = JSON.parse(localStorage.getItem(storageKeys.favorites) || "[]");
+  let interactionCounts = JSON.parse(localStorage.getItem(storageKeys.interactions) || "{}");
+
+  function saveState() {
+    localStorage.setItem(storageKeys.favorites, JSON.stringify(favoriteIds));
+    localStorage.setItem(storageKeys.interactions, JSON.stringify(interactionCounts));
+  }
+
+  function updateFavoritesCount() {
+    const count = favoriteIds.length;
+    favoritesCountText.textContent = count + (count === 1 ? " Favorite Saved" : " Favorites Saved");
+  }
+
+  function seededScore(id, seedText) {
+    let hash = 0;
+    const value = seedText + "-" + id;
+    for (let i = 0; i < value.length; i += 1) {
+      hash = (hash * 31 + value.charCodeAt(i)) % 100000;
+    }
+    return hash;
+  }
+
+  function getDailyAffirmations() {
+    const todaySeed = new Date().toISOString().slice(0, 10);
+    return [...affirmationPool]
+      .sort(function (a, b) {
+        const aWeight = (interactionCounts[a.category] || 0) * 100000 + seededScore(a.id, todaySeed);
+        const bWeight = (interactionCounts[b.category] || 0) * 100000 + seededScore(b.id, todaySeed);
+        return bWeight - aWeight;
+      })
+      .slice(0, 6);
+  }
+
+  function getFavoriteAffirmations() {
+    return affirmationPool.filter(function (affirmation) {
+      return favoriteIds.includes(affirmation.id);
+    });
+  }
+
+  function toggleFavorite(affirmation) {
+    if (favoriteIds.includes(affirmation.id)) {
+      favoriteIds = favoriteIds.filter(function (id) { return id !== affirmation.id; });
+    } else {
+      favoriteIds.push(affirmation.id);
+      interactionCounts[affirmation.category] = (interactionCounts[affirmation.category] || 0) + 1;
+    }
+    saveState();
+    updateFavoritesCount();
+    renderAffirmations();
+  }
+
+  function createAffirmationCard(affirmation) {
+    const card = document.createElement("div");
+    card.className = "affirmation-card";
+
+    const text = document.createElement("span");
+    text.className = "affirmation-text";
+    text.textContent = '"' + affirmation.text + '"';
+
+    const heartButton = document.createElement("button");
+    heartButton.type = "button";
+    heartButton.className = "affirmation-heart-btn";
+    heartButton.setAttribute("aria-label", "Toggle favorite affirmation");
+
+    const isFavorite = favoriteIds.includes(affirmation.id);
+    heartButton.innerHTML = '<span class="affirmation-heart ' + (isFavorite ? 'is-favorite' : '') + '">' + (isFavorite ? '♥' : '♡') + '</span>';
+
+    heartButton.addEventListener("click", function () {
+      toggleFavorite(affirmation);
+    });
+
+    card.appendChild(text);
+    card.appendChild(heartButton);
+    return card;
+  }
+
+  function renderAffirmations() {
+    affirmationList.innerHTML = "";
+
+    const affirmations = currentView === "favorites" ? getFavoriteAffirmations() : getDailyAffirmations();
+
+    affirmationsViewTitle.textContent = currentView === "favorites" ? "YOUR FAVORITES" : "TODAY'S SELECTION";
+    affirmationsViewSubtitle.textContent = currentView === "favorites"
+      ? "These are the affirmations you have saved so far."
+      : "Selected for today using your saved interactions and favorites.";
+
+    emptyFavoritesMessage.hidden = !(currentView === "favorites" && affirmations.length === 0);
+
+    affirmations.forEach(function (affirmation) {
+      affirmationList.appendChild(createAffirmationCard(affirmation));
+    });
+
+    showTodayBtn.classList.toggle("active", currentView === "today");
+    showFavoritesBtn.classList.toggle("active", currentView === "favorites");
+  }
+
+  showTodayBtn.addEventListener("click", function () {
+    currentView = "today";
+    renderAffirmations();
+  });
+
+  showFavoritesBtn.addEventListener("click", function () {
+    currentView = "favorites";
+    renderAffirmations();
+  });
+
+  updateFavoritesCount();
+  renderAffirmations();
+</script>
+<a href="chatbot.html" class="floating-chatbot-button">💬 AI Chatbot</a>
+</body>
+</html>

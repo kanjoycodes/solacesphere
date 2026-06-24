@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - Solace Sphere</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <img src="images/logo.png" alt="Solace Sphere logo" class="logo">
+  <nav>
+    <a href="landing page.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Support & Tools</a>
+      <div class="dropdown-menu">
+        <a href="resources.html">Resources</a>
+        <a href="personal toolbox.html">Personal Toolbox</a>
+        <a href="community.html">Community</a>
+      </div>
+    </div>
+    <a href="appointment.html">Appointments</a>
+    <a href="chatbot.html">Chatbot</a>
+    <a href="signup.html" class="signup-link">Sign Up</a>
+    
+    <!-- Dropdown Menu for Profile -->
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Profile</a>
+      <div class="dropdown-menu">
+        <a href="profile.html">View Profile</a>
+        <a href="edit-profile.html">Edit Profile</a>
+        <a href="personal-progress.html">Progress & Insights</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<section class="profile-page">
+  <div class="profile-hero-card">
+    <div class="profile-avatar profile-avatar-preview" id="editProfileAvatar">S</div>
+    <div>
+      <p class="profile-kicker">EDIT PROFILE</p>
+      <h1>Edit your details</h1>
+      <p class="profile-hero-email">Update your name, bio, wellness focus, and profile photo.</p>
+      <p class="profile-meta-line"><a href="profile.html">Back to profile view</a></p>
+    </div>
+  </div>
+
+  <div class="profile-layout profile-edit-layout">
+    <div class="profile-panel">
+      <div class="profile-panel-head">
+        <h2>Profile details</h2>
+        <p>These values will be shown on your profile page after saving.</p>
+      </div>
+
+      <div id="profileMessage" class="profile-message" hidden></div>
+
+      <div class="profile-form-grid">
+        <label class="profile-field profile-field-full">
+          <span>Profile photo</span>
+          <input type="file" id="profilePhotoInput" accept="image/*">
+          <small class="profile-field-help">Upload a JPG or PNG. Your photo is saved in your browser.</small>
+        </label>
+
+        <label class="profile-field">
+          <span>Full name</span>
+          <input type="text" id="profileNameInput" placeholder="Your name">
+        </label>
+
+        <label class="profile-field">
+          <span>Display name</span>
+          <input type="text" id="profileDisplayNameInput" placeholder="How you'd like to be greeted">
+        </label>
+
+        <label class="profile-field">
+          <span>Email</span>
+          <input type="email" id="profileEmailInput" placeholder="name@example.com">
+        </label>
+
+        <label class="profile-field">
+          <span>Wellness focus</span>
+          <input type="text" id="profileFocusInput" placeholder="e.g. Stress management, sleep, balance">
+        </label>
+
+        <label class="profile-field profile-field-full">
+          <span>Short bio</span>
+          <textarea id="profileBioInput" rows="5" placeholder="A few words about how you're doing or what you're working on."></textarea>
+        </label>
+      </div>
+
+      <div class="profile-actions">
+        <button type="button" class="btn profile-save-button" id="saveProfileButton">Save Profile</button>
+        <a href="profile.html" class="profile-secondary-button profile-link-button">Cancel</a>
+      </div>
+    </div>
+
+    <div class="profile-panel">
+      <div class="profile-panel-head">
+        <h2>Preview</h2>
+        <p>This is how your profile information will appear.</p>
+      </div>
+
+      <div class="profile-preview-box">
+        <div class="profile-preview-photo">
+          <div class="profile-avatar profile-avatar-preview" id="previewAvatar">S</div>
+        </div>
+        <div class="profile-preview-text">
+          <h3 id="previewName">Solace Sphere Member</h3>
+          <p id="previewEmail">Set up your account details and wellness preferences.</p>
+          <p id="previewFocus">Building a steadier routine.</p>
+          <p id="previewBio">Your bio will appear here once you save it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const profileStorageKeys = {
+    profile: "solaceUserProfile",
+    session: "solaceCurrentUser"
+  };
+
+  const profileElements = {
+    avatar: document.getElementById("editProfileAvatar"),
+    previewAvatar: document.getElementById("previewAvatar"),
+    previewName: document.getElementById("previewName"),
+    previewEmail: document.getElementById("previewEmail"),
+    previewFocus: document.getElementById("previewFocus"),
+    previewBio: document.getElementById("previewBio"),
+    message: document.getElementById("profileMessage"),
+    nameInput: document.getElementById("profileNameInput"),
+    displayNameInput: document.getElementById("profileDisplayNameInput"),
+    emailInput: document.getElementById("profileEmailInput"),
+    focusInput: document.getElementById("profileFocusInput"),
+    bioInput: document.getElementById("profileBioInput"),
+    photoInput: document.getElementById("profilePhotoInput"),
+    saveButton: document.getElementById("saveProfileButton")
+  };
+
+  let currentProfile = null;
+  let selectedPhotoDataUrl = "";
+
+  function readJson(key, fallback) {
+    try {
+      const rawValue = localStorage.getItem(key);
+      if (rawValue === null) {
+        return fallback;
+      }
+      const parsed = JSON.parse(rawValue);
+      return parsed ?? fallback;
+    } catch (error) {
+      return fallback;
+    }
+  }
+
+  function getStoredProfile() {
+    const profile = readJson(profileStorageKeys.profile, null);
+    if (profile && typeof profile === "object") {
+      return profile;
+    }
+
+    return {
+      name: "",
+      displayName: "",
+      email: "",
+      wellnessFocus: "Building a steadier routine",
+      bio: "",
+      photoDataUrl: "",
+      createdAt: new Date().toISOString()
+    };
+  }
+
+  function getInitial(name) {
+    const source = String(name || "S").trim();
+    return source ? source.charAt(0).toUpperCase() : "S";
+  }
+
+  function setMessage(text, type) {
+    profileElements.message.hidden = !text;
+    profileElements.message.textContent = text || "";
+    profileElements.message.className = "profile-message" + (type ? " profile-message-" + type : "");
+  }
+
+  function updateAvatar(target, profile) {
+    if (!target) {
+      return;
+    }
+
+    target.innerHTML = "";
+    if (profile.photoDataUrl) {
+      const image = document.createElement("img");
+      image.className = "profile-avatar-image";
+      image.src = profile.photoDataUrl;
+      image.alt = (profile.displayName || profile.name || "Profile photo") + " photo";
+      target.appendChild(image);
+    } else {
+      target.textContent = getInitial(profile.displayName || profile.name || "S");
+    }
+  }
+
+  function updatePreview(profile) {
+    updateAvatar(profileElements.previewAvatar, profile);
+    profileElements.previewName.textContent = profile.displayName || profile.name || "Solace Sphere Member";
+    profileElements.previewEmail.textContent = profile.email || "Add your email and preferences to personalize your space.";
+    profileElements.previewFocus.textContent = profile.wellnessFocus || "Building a steadier routine.";
+    profileElements.previewBio.textContent = profile.bio || "Your bio will appear here once you save it.";
+  }
+
+  function renderProfile(profile) {
+    currentProfile = profile;
+    updateAvatar(profileElements.avatar, profile);
+    updatePreview(profile);
+
+    profileElements.nameInput.value = profile.name || "";
+    profileElements.displayNameInput.value = profile.displayName || "";
+    profileElements.emailInput.value = profile.email || "";
+    profileElements.focusInput.value = profile.wellnessFocus || "";
+    profileElements.bioInput.value = profile.bio || "";
+  }
+
+  function syncSession(profile) {
+    localStorage.setItem(profileStorageKeys.session, JSON.stringify({
+      email: profile.email,
+      displayName: profile.displayName || profile.name,
+      loggedInAt: new Date().toISOString()
+    }));
+  }
+
+  function handlePhotoSelection(file) {
+    return new Promise(function (resolve, reject) {
+      if (!file) {
+        resolve("");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        resolve(String(reader.result || ""));
+      };
+      reader.onerror = function () {
+        reject(new Error("Unable to read the selected image."));
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function saveProfile() {
+    const name = profileElements.nameInput.value.trim();
+    const displayName = profileElements.displayNameInput.value.trim();
+    const email = profileElements.emailInput.value.trim();
+    const wellnessFocus = profileElements.focusInput.value.trim();
+    const bio = profileElements.bioInput.value.trim();
+
+    if (!name || !email) {
+      setMessage("Please add at least your name and email.", "error");
+      return;
+    }
+
+    let photoDataUrl = currentProfile && currentProfile.photoDataUrl ? currentProfile.photoDataUrl : "";
+    const selectedFile = profileElements.photoInput.files && profileElements.photoInput.files[0];
+    if (selectedFile) {
+      photoDataUrl = selectedPhotoDataUrl || await handlePhotoSelection(selectedFile);
+    }
+
+    const nextProfile = {
+      ...(currentProfile || {}),
+      name: name,
+      displayName: displayName || name.split(" ")[0],
+      email: email,
+      wellnessFocus: wellnessFocus || "Building a steadier routine",
+      bio: bio,
+      photoDataUrl: photoDataUrl,
+      createdAt: (currentProfile && currentProfile.createdAt) || new Date().toISOString()
+    };
+
+    localStorage.setItem(profileStorageKeys.profile, JSON.stringify(nextProfile));
+    syncSession(nextProfile);
+    renderProfile(nextProfile);
+    setMessage("Profile saved successfully.", "success");
+  }
+
+  function handleDropdowns() {
+    document.querySelectorAll('.dropdown-toggle').forEach(function (toggle) {
+      toggle.addEventListener('click', function (e) {
+        e.preventDefault();
+      });
+    });
+  }
+
+  profileElements.photoInput.addEventListener("change", function () {
+    const file = this.files && this.files[0];
+    if (!file) {
+      selectedPhotoDataUrl = "";
+      return;
+    }
+
+    handlePhotoSelection(file)
+      .then(function (dataUrl) {
+        selectedPhotoDataUrl = dataUrl;
+        const previewProfile = {
+          ...currentProfile,
+          name: profileElements.nameInput.value.trim(),
+          displayName: profileElements.displayNameInput.value.trim() || profileElements.nameInput.value.trim(),
+          email: profileElements.emailInput.value.trim(),
+          wellnessFocus: profileElements.focusInput.value.trim(),
+          bio: profileElements.bioInput.value.trim(),
+          photoDataUrl: dataUrl
+        };
+        updatePreview(previewProfile);
+        updateAvatar(profileElements.avatar, previewProfile);
+      })
+      .catch(function () {
+        selectedPhotoDataUrl = "";
+        setMessage("Could not read that image. Try another file.", "error");
+      });
+  });
+
+  ["input", "change"].forEach(function (eventName) {
+    [profileElements.nameInput, profileElements.displayNameInput, profileElements.emailInput, profileElements.focusInput, profileElements.bioInput].forEach(function (input) {
+      input.addEventListener(eventName, function () {
+        updatePreview({
+          ...currentProfile,
+          name: profileElements.nameInput.value.trim(),
+          displayName: profileElements.displayNameInput.value.trim() || profileElements.nameInput.value.trim(),
+          email: profileElements.emailInput.value.trim(),
+          wellnessFocus: profileElements.focusInput.value.trim(),
+          bio: profileElements.bioInput.value.trim(),
+          photoDataUrl: pendingPhotoDataUrl || (currentProfile && currentProfile.photoDataUrl) || ""
+        });
+      });
+    });
+  });
+
+  profileElements.saveButton.addEventListener("click", function () {
+    saveProfile().catch(function () {
+      setMessage("Unable to save the profile right now.", "error");
+    });
+  });
+
+  const startingProfile = getStoredProfile();
+  renderProfile(startingProfile);
+  handleDropdowns();
+</script>
+<script src="auth.js"></script>
+</body>
+</html>

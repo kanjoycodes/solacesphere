@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Toolbox - Solace Sphere</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <img src="images/logo.png" alt="Solace Sphere logo" class="logo">
+  <nav>
+    <a href="landing page.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    
+    <!-- Dropdown Menu for Support & Tools -->
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Support & Tools</a>
+      <div class="dropdown-menu">
+        <a href="resources.html">Resources</a>
+        <a href="personal toolbox.html">Personal Toolbox</a>
+        <a href="community.html">Community</a>
+      </div>
+    </div>
+    
+    <a href="appointment.html">Appointments</a>
+    <a href="chatbot.html">Chatbot</a>
+    <a href="signup.html" class="signup-link">Sign Up</a>
+    <a href="profile.html" class="profile-link">Profile</a>
+  </nav>
+</header>
+
+<section>
+  <div class="center-image">
+    <img 
+      src="images/personaltoolbox.png"
+      alt="Self care illustration"
+      class="feature-image"
+    >
+  </div>
+
+  <!-- Subtitle -->
+  <div class="subtitle">
+    <p class="subtitle-text">
+      Discover simple, guided exercises designed to empower you and manage daily challenges.
+    </p>
+  </div>
+
+  <!-- Tool Card Container -->
+  <div class="tools-wrap">
+
+    <!-- Mood & Habit Tracker -->
+    <a href="mood.html" class="tool-card">
+      <img 
+        src="images/pmood.png"
+        alt="Mood tracker"
+        class="tool-image"
+      >
+      <div>
+        <h2>MOOD &amp; HABIT TRACKER</h2>
+        <p>
+          Log your daily feelings, identify triggers, and visualize patterns over time to improve emotional health.
+        </p>
+      </div>
+    </a>
+
+    <!-- Journalling -->
+    <a href="journal.html" class="tool-card">
+      <img 
+        src="images/pjournal.png"
+        alt="Journaling"
+        class="tool-image"
+      >
+      <div>
+        <h2>JOURNALLING</h2>
+        <p>
+          Process thoughts, track progress and gain self-awareness through private written reflection.
+        </p>
+      </div>
+    </a>
+
+    <!-- Guided Breathing -->
+    <a href="breathing.html" class="tool-card">
+      <img 
+        src="images/pbreathing.png"
+        alt="Guided breathing"
+        class="tool-image"
+      >
+      <div>
+        <h2>GUIDED BREATHING</h2>
+        <p>
+          Follow simple visual and audio prompts to calm your body and mind during moments of stress or panic.
+        </p>
+      </div>
+    </a>
+
+    <!-- Affirmations -->
+    <a href="affirmations.html" class="tool-card">
+      <img 
+        src="images/paffirmation.png"
+        alt="Affirmations"
+        class="tool-image"
+      >
+      <div>
+        <h2>AFFIRMATIONS</h2>
+        <p>
+          Receive and practice positive statements to challenge negative thoughts and build self-esteem.
+        </p>
+      </div>
+    </a>
+
+  </div>
+
+</section>
+<a href="chatbot.html" class="floating-chatbot-button">💬 AI Chatbot</a>
+<script>
+  // Handle dropdown toggle click
+  document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+    toggle.addEventListener('click', function(e) {
+      e.preventDefault();
+    });
+  });
+</script>
+<script src="auth.js"></script>
+</body>
+</html>
