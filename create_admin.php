@@ -9,7 +9,7 @@ $pass = $argv[2];
 try {
     $pdo = getDbConnection();
     $hash = password_hash($pass, PASSWORD_DEFAULT);
-    $stmt = $pdo->prepare('INSERT INTO users (name, display_name, email, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, "admin", NOW(), NOW())');
+    $stmt = $pdo->prepare('INSERT INTO users (name, display_name, email, password_hash, role, status, created_at, updated_at) VALUES (?, ?, ?, ?, "admin", "active", NOW(), NOW())');
     $name = 'Admin';
     $display = 'Admin';
     $stmt->execute([$name, $display, $email, $hash]);

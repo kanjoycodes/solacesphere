@@ -15,7 +15,7 @@ if ($email === '' || $password === '') {
 
 try {
     $pdo = getDbConnection();
-    $stmt = $pdo->prepare('SELECT id, name, display_name, email, password_hash, role FROM users WHERE email = :email');
+    $stmt = $pdo->prepare('SELECT id, name, display_name, email, password_hash, role, status FROM users WHERE email = :email');
     $stmt->execute([':email' => $email]);
     $user = $stmt->fetch();
     if (!$user) {
