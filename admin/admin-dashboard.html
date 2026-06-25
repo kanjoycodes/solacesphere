@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Dashboard - Solace Sphere</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <header>
+    <img src="../images/logo.png" alt="Solace Sphere logo" class="logo">
+    <nav>
+      <a href="../landing page.html">Home</a>
+      <a href="../patient/dashboard.html">Dashboard</a>
+      <div class="dropdown">
+        <a href="#" class="dropdown-toggle">Support & Tools</a>
+        <div class="dropdown-menu">
+          <a href="../patient/resources.html">Resources</a>
+          <a href="../patient/personal toolbox.html">Personal Toolbox</a>
+          <a href="../patient/community.html">Community</a>
+        </div>
+      </div>
+      <a href="../patient/appointment.html">Appointments</a>
+      <a href="../professional/clinician-dashboard.html">Clinical</a>
+      <a href="admin-dashboard.html" class="active">Admin</a>
+      <a href="../patient/profile.html" class="profile-link">Profile</a>
+    </nav>
+  </header>
+
+  <main class="admin-dashboard">
+          <a href="../professional/clinician-dashboard.html" class="back-link">&larr; Back to Clinical Dashboard</a>
+
+    <section class="admin-hero">
+      <h1>Admin Dashboard</h1>
+      <p class="subtitle">Control center for users, verification, content, and system health.</p>
+    </section>
+
+    <section class="admin-grid">
+      <section class="admin-card user-management-card">
+        <div class="section-header">
+          <h2>User Management</h2>
+          <p class="helper-text">Search, update roles, or deactivate accounts.</p>
+        </div>
+
+        <div class="search-row">
+          <input type="text" id="userSearch" class="search-field" placeholder="Search users by name, email, or role...">
+        </div>
+
+        <div class="user-directory" id="userDirectory"></div>
+      </section>
+
+      <section class="admin-card verification-card">
+        <div class="section-header">
+          <h2>Professional Verification</h2>
+          <p class="helper-text">Review clinician credentials and approve or reject applications.</p>
+        </div>
+
+        <div id="verificationQueue" class="verification-queue"></div>
+      </section>
+
+      <section class="admin-card cms-card">
+        <div class="section-header">
+          <h2>Resource Library CMS</h2>
+          <p class="helper-text">Add or moderate wellness content.</p>
+        </div>
+
+        <form id="resourceForm" class="resource-form">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="resourceTitle">Title</label>
+              <input id="resourceTitle" type="text" class="form-input" placeholder="Resource title" required>
+            </div>
+            <div class="form-group">
+              <label for="resourceCategory">Category</label>
+              <select id="resourceCategory" class="form-input" required>
+                <option value="">Select category</option>
+                <option value="Meditation">Meditation</option>
+                <option value="Breathing">Breathing</option>
+                <option value="Journaling">Journaling</option>
+                <option value="Sleep">Sleep</option>
+                <option value="CBT">CBT</option>
+                <option value="Mindfulness">Mindfulness</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="resourceBody">Body Text</label>
+            <textarea id="resourceBody" class="notes-textarea" rows="5" placeholder="Write the wellness article or resource content..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="resourcePdf">PDF Upload</label>
+            <input id="resourcePdf" type="file" class="form-input" accept="application/pdf">
+          </div>
+          <div class="cms-actions">
+            <button type="submit" class="btn-save-lock">Add New Resource</button>
+          </div>
+        </form>
+
+        <div class="moderation-list" id="moderationList"></div>
+      </section>
+
+      <section class="admin-card health-card">
+        <div class="section-header">
+          <h2>System Health Monitor</h2>
+          <p class="helper-text">Live service status overview.</p>
+        </div>
+
+        <div class="health-metrics">
+          <div class="health-metric"><span class="metric-label">Active Sessions</span><strong id="activeSessions">128</strong></div>
+          <div class="health-metric"><span class="metric-label">DB Status</span><strong class="status-good">Connected</strong></div>
+          <div class="health-metric"><span class="metric-label">AI Engine Ping</span><strong class="status-good">42 ms</strong></div>
+        </div>
+      </section>
+
+      <section class="admin-card db-card">
+        <div class="section-header">
+          <h2>Database Management</h2>
+          <p class="helper-text">Integrity, security, and backup controls for the relational core.</p>
+        </div>
+
+        <div class="db-panels">
+          <div class="db-panel">
+            <h3>Relational Integrity</h3>
+            <ul>
+              <li>Foreign key constraints enforced</li>
+              <li>Patient deletions cascade safely</li>
+              <li>Change log stored for recovery</li>
+            </ul>
+          </div>
+          <div class="db-panel">
+            <h3>Security & Privacy</h3>
+            <ul>
+              <li>Password hashes encrypted at rest</li>
+              <li>Sensitive clinical notes protected</li>
+              <li>Access logging enabled</li>
+            </ul>
+          </div>
+          <div class="db-panel">
+            <h3>Backups</h3>
+            <ul>
+              <li>Daily SQL export scheduled</li>
+              <li>Longitudinal data retention active</li>
+              <li>Restore point: 2:00 AM</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    function fetchUsers(filter) {
+      const params = new URLSearchParams();
+      if (filter) params.set('search', filter);
+      fetch('../api/admin/users.php?' + params.toString())
+        .then(r => r.json())
+        .then(data => {
+          if (data.ok) renderUsers(data.users);
+        });
+    }
+
+    function fetchPendingVerifications() {
+      fetch('../api/admin/users.php?role=professional')
+        .then(r => r.json())
+        .then(data => {
+          if (data.ok) {
+            const pending = data.users.filter(u => u.status === 'pending');
+            renderVerification(pending);
+          }
+        });
+    }
+
+    function renderUsers(users) {
+      const directory = document.getElementById('userDirectory');
+      directory.innerHTML = (users || []).map(user => `
+        <div class="directory-row">
+          <div>
+            <h3>${escapeHtml(user.name)}</h3>
+            <p>${escapeHtml(user.email)}</p>
+            <span class="role-pill ${user.role.toLowerCase()}">${escapeHtml(user.role)}</span>
+            <span class="status-pill ${user.status.toLowerCase()}">${escapeHtml(user.status)}</span>
+          </div>
+          <div class="row-actions">
+            <button type="button" class="mini-btn" onclick="updateRole(${user.id})">Update Role</button>
+            <button type="button" class="mini-btn danger" onclick="toggleAccount(${user.id})">Deactivate</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderVerification(pending) {
+      const queue = document.getElementById('verificationQueue');
+      if (!pending.length) {
+        queue.innerHTML = '<p>No pending verifications.</p>';
+        return;
+      }
+      queue.innerHTML = pending.map(user => `
+        <div class="verification-item">
+          <div class="verification-info">
+            <h3>${escapeHtml(user.name)}</h3>
+            <p><strong>Email:</strong> ${escapeHtml(user.email)}</p>
+            <p><strong>Status:</strong> ${escapeHtml(user.status)}</p>
+          </div>
+          <div class="verification-actions">
+            <button type="button" class="mini-btn verify" onclick="verifyClinician(${user.id})">Approve</button>
+            <button type="button" class="mini-btn danger" onclick="rejectClinician(${user.id})">Reject</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text || '';
+      return div.innerHTML;
+    }
+
+    document.getElementById('userSearch').addEventListener('input', function(e) {
+      fetchUsers(e.target.value);
+    });
+
+    document.getElementById('resourceForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const title = document.getElementById('resourceTitle').value.trim();
+      const category = document.getElementById('resourceCategory').value;
+      alert('Resource "' + title + '" added to the library (local only).');
+      this.reset();
+    });
+
+    window.updateRole = function(id) {
+      const newRole = prompt('Enter new role (patient, professional, admin):');
+      if (newRole && ['patient','professional','admin'].includes(newRole)) {
+        fetch('../api/admin/users.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({user_id: id, role: newRole})
+        }).then(r => r.json()).then(data => {
+          if (data.ok) { fetchUsers(); fetchPendingVerifications(); }
+          else alert(data.error || 'Failed to update role.');
+        });
+      }
+    };
+
+    window.toggleAccount = function(id) {
+      const newStatus = prompt('Enter new status (active, deactivated):');
+      if (newStatus && ['active','deactivated'].includes(newStatus)) {
+        fetch('../api/admin/users.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({user_id: id, status: newStatus})
+        }).then(r => r.json()).then(data => {
+          if (data.ok) { fetchUsers(); fetchPendingVerifications(); }
+          else alert(data.error || 'Failed to update status.');
+        });
+      }
+    };
+
+    window.verifyClinician = function(id) {
+      fetch('../api/admin/verify.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user_id: id, action: 'approve'})
+      }).then(r => r.json()).then(data => {
+        if (data.ok) { fetchUsers(); fetchPendingVerifications(); }
+        else alert(data.error || 'Failed to approve.');
+      });
+    };
+
+    window.rejectClinician = function(id) {
+      fetch('../api/admin/verify.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user_id: id, action: 'reject'})
+      }).then(r => r.json()).then(data => {
+        if (data.ok) { fetchUsers(); fetchPendingVerifications(); }
+        else alert(data.error || 'Failed to reject.');
+      });
+    };
+
+    fetchUsers();
+    fetchPendingVerifications();
+  </script>
+  <script>
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+      toggle.addEventListener('click', function(e) { e.preventDefault(); });
+    });
+  </script>
+  <script src="../auth.js"></script>
+</body>
+</html>
