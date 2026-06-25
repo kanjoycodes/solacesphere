@@ -1,5 +1,20 @@
 # Solace Sphere Onboarding Guide
 
+## Folder Structure
+
+```
+solacesphere/
+  auth/          login, signup, password reset pages (public)
+  patient/       patient tools: dashboard, mood, journal, breathing, etc.
+  professional/  clinician dashboard, schedule, notes, patient detail
+  admin/         admin dashboard for user management and verification
+  api/           PHP backend endpoints (login, signup, admin, etc.)
+  database/      schema.sql and seed script
+  server/logs/   safety event logs and abuse state
+  styles.css     global stylesheet
+  auth.js        client-side role guard and navigation
+```
+
 ## How to Run the Application
 
 1. Open a terminal and go to the project folder (wherever you placed it on your machine).
@@ -33,14 +48,14 @@
 
 ---
 
-## Pre seeded Accounts (Password for all: `password`)
+## Pre seeded Accounts
 
-| Role         | Email                       | Status   |
-|--------------|-----------------------------|----------|
-| Admin        | admin@solacesphere.com      | active   |
-| Patient      | joy@example.com             | active   |
-| Professional | sarah.wilson@example.com    | pending  |
-| Professional | ahmed.khan@example.com      | pending  |
+| Role         | Email                       | Password  | Status   |
+|--------------|-----------------------------|-----------|----------|
+| Admin        | admin@solacesphere.com      | admin123  | active   |
+| Patient      | joy@example.com             | password  | active   |
+| Professional | sarah.wilson@example.com    | password  | pending  |
+| Professional | ahmed.khan@example.com      | password  | pending  |
 
 ---
 

@@ -135,6 +135,8 @@
           const roleHome = (result.user.role === "professional") ? "../professional/clinician-dashboard.html" : (result.user.role === "admin" ? "../admin/admin-dashboard.html" : "../patient/dashboard.html");
           window.location.href = roleHome;
         }, 500);
+      } else if (result && result.error) {
+        setLoginMessage(result.error, "error");
       } else {
         // fallback to localStorage demo check
         if (!storedProfile || storedProfile.email !== email || storedProfile.password !== password) {

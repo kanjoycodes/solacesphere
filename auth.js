@@ -112,7 +112,7 @@
     if (!currentUser) return;
 
     // Replace Profile link with a dropdown split into sections
-    const profileLink = nav.querySelector('a[href="profile.html"]');
+    const profileLink = nav.querySelector('a.profile-link') || nav.querySelector('a[href="profile.html"]');
     if (profileLink && !profileLink.closest('.dropdown') && !nav.querySelector('.dropdown[data-generated]')) {
       const userName = (currentUser && (currentUser.displayName || currentUser.name || currentUser.username)) ? (currentUser.displayName || currentUser.name || currentUser.username) : 'Profile';
 

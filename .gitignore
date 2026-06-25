@@ -1,0 +1,8 @@
+.env
+server/logs/
+.DS_Store
+desktop.ini
+Thumbs.db
+.vscode/
+.idea/
+*.log

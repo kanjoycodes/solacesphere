@@ -11,24 +11,13 @@
     <img src="../images/logo.png" alt="Solace Sphere logo" class="logo">
     <nav>
       <a href="../landing page.html">Home</a>
-      <a href="../patient/dashboard.html">Dashboard</a>
-      <div class="dropdown">
-        <a href="#" class="dropdown-toggle">Support & Tools</a>
-        <div class="dropdown-menu">
-          <a href="../patient/resources.html">Resources</a>
-          <a href="../patient/personal toolbox.html">Personal Toolbox</a>
-          <a href="../patient/community.html">Community</a>
-        </div>
-      </div>
-      <a href="../patient/appointment.html">Appointments</a>
       <a href="../professional/clinician-dashboard.html">Clinical</a>
       <a href="admin-dashboard.html" class="active">Admin</a>
-      <a href="../patient/profile.html" class="profile-link">Profile</a>
+      <a href="#" id="logout-link-nav">Logout</a>
     </nav>
   </header>
 
   <main class="admin-dashboard">
-          <a href="../professional/clinician-dashboard.html" class="back-link">&larr; Back to Clinical Dashboard</a>
 
     <section class="admin-hero">
       <h1>Admin Dashboard</h1>
@@ -283,6 +272,11 @@
   <script>
     document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
       toggle.addEventListener('click', function(e) { e.preventDefault(); });
+    });
+    document.getElementById('logout-link-nav').addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('solaceCurrentUser');
+      window.location.replace('/landing page.html');
     });
   </script>
   <script src="../auth.js"></script>
