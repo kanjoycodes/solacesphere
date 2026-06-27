@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Solace Sphere</title>
+    <link rel="stylesheet" href="../styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+<header>
+  <img src="../images/logo.png" alt="Solace Sphere logo" class="logo">
+  <nav>
+    <a href="landing page.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    
+    <!-- Dropdown Menu for Support & Tools -->
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Support & Tools</a>
+      <div class="dropdown-menu">
+        <a href="resources.html">Resources</a>
+        <a href="personal toolbox.html">Personal Toolbox</a>
+        <a href="community.html">Community</a>
+      </div>
+    </div>
+    
+    <a href="appointment.html">Appointments</a>
+    <a href="chatbot.html">Chatbot</a>
+    <a href="../auth/signup.html" class="signup-link">Sign Up</a>
+    
+    <!-- Dropdown Menu for Profile -->
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Profile</a>
+      <div class="dropdown-menu">
+        <a href="profile.html">View Profile</a>
+        <a href="edit-profile.html">Edit Profile</a>
+        <a href="personal-progress.html">Progress & Insights</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<section class="profile-page">
+  <div class="profile-hero-card">
+    <div class="profile-avatar" id="profileAvatar">S</div>
+    <div class="profile-hero-copy">
+      <p class="profile-kicker">YOUR PROFILE</p>
+      <h1 id="profileHeroName">Solace Sphere Member</h1>
+      <p id="profileHeroEmail" class="profile-hero-email">Set up your account details and wellness preferences.</p>
+      <p id="profileMemberSince" class="profile-meta-line">Member since today</p>
+      <a href="edit-profile.html" class="profile-edit-link">Edit profile</a>
+    </div>
+  </div>
+
+  <!-- Wellness Summary & Activity Snapshot -->
+  <div class="profile-summary-section">
+    <div class="profile-summary-wrapper">
+      <!-- Activity Snapshot -->
+      <div class="profile-panel">
+        <div class="profile-panel-head">
+          <h2>Your activity snapshot</h2>
+          <p>A quick view of how you're using your wellness tools.</p>
+        </div>
+
+        <div class="profile-stats-grid">
+          <a href="chatbot.html" class="profile-stat-card profile-stat-link">
+            <div class="profile-stat-value" id="savedChatsCount">0</div>
+            <div class="profile-stat-label">Saved chats</div>
+            <div class="profile-stat-hint">Open chatbot conversations →</div>
+          </a>
+          <a href="resources.html" class="profile-stat-card profile-stat-link">
+            <div class="profile-stat-value" id="bookmarksCount">0</div>
+            <div class="profile-stat-label">Bookmarked resources</div>
+            <div class="profile-stat-hint">Go to saved resources →</div>
+          </a>
+          <a href="community.html" class="profile-stat-card profile-stat-link">
+            <div class="profile-stat-value" id="communityPostsCount">0</div>
+            <div class="profile-stat-label">Community posts</div>
+            <div class="profile-stat-hint">View your community space →</div>
+          </a>
+          <a href="affirmations.html" class="profile-stat-card profile-stat-link">
+            <div class="profile-stat-value" id="favoriteAffirmationsCount">0</div>
+            <div class="profile-stat-label">Favorite affirmations</div>
+            <div class="profile-stat-hint">See your affirmations →</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Wellness Summary -->
+      <div class="profile-panel profile-summary-panel">
+        <div class="profile-panel-head">
+          <h2>Wellness summary</h2>
+          <p>A gentle reminder of what matters most right now.</p>
+        </div>
+        <div class="profile-summary-box">
+          <p><strong>Current focus:</strong> <span id="profileFocusSummary">Building a steadier routine.</span></p>
+          <p><strong>Support style:</strong> Calm, practical, step-by-step encouragement.</p>
+          <p><strong>Next helpful step:</strong> Visit your tools, save supportive resources, or start a fresh chat.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-layout">
+    <div class="profile-panel profile-view-panel" style="display: none;">
+      <div class="profile-panel-head">
+        <h2>Profile details</h2>
+        <p>This is your read-only profile view. Use Edit profile to update anything here.</p>
+      </div>
+
+      <div class="profile-details-grid">
+        <div class="profile-detail-item">
+          <span class="profile-detail-label">Full name</span>
+          <span id="profileDetailName" class="profile-detail-value">Solace Sphere Member</span>
+        </div>
+
+        <div class="profile-detail-item">
+          <span class="profile-detail-label">Display name</span>
+          <span id="profileDetailDisplayName" class="profile-detail-value">Solace Sphere Member</span>
+        </div>
+
+        <div class="profile-detail-item">
+          <span class="profile-detail-label">Email</span>
+          <span id="profileDetailEmail" class="profile-detail-value">Add your email and preferences to personalize your space.</span>
+        </div>
+
+        <div class="profile-detail-item">
+          <span class="profile-detail-label">Wellness focus</span>
+          <span id="profileDetailFocus" class="profile-detail-value">Building a steadier routine.</span>
+        </div>
+
+        <div class="profile-detail-item profile-detail-full">
+          <span class="profile-detail-label">Bio</span>
+          <p id="profileDetailBio" class="profile-bio-text">Your bio will appear here once you save it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Personal Progress Analytics (merged into profile) -->
+<section id="personal-progress" class="progress-page" style="display: none;">
+  <h2 style="margin:0 0 1rem 0;">Personal Progress & Insights</h2>
+  <section class="progress-hero">
+    <div class="stat-card streak">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-value" id="streak-value">3</div>
+      <div class="stat-label">Current Streak (days)</div>
+    </div>
+
+    <div class="stat-card avg-mood">
+      <div class="stat-icon">😊</div>
+      <div class="stat-value" id="avg-mood">7.6</div>
+      <div class="stat-label">Average Mood (7 days)</div>
+    </div>
+
+    <div class="stat-card frequent-trigger">
+      <div class="stat-icon">🏷️</div>
+      <div class="stat-value" id="top-trigger">Work stress</div>
+      <div class="stat-label">Most Frequent Trigger</div>
+    </div>
+  </section>
+
+  <section class="progress-charts">
+    <div class="chart-card">
+      <h3>Mood Trend (30 days)</h3>
+      <canvas id="moodTrendChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h3>Habit Consistency Heatmap</h3>
+      <div id="habit-heatmap" class="heatmap-placeholder">(heatmap placeholder)</div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Correlation View (Sleep / Mood)</h3>
+      <canvas id="correlationChart"></canvas>
+    </div>
+  </section>
+
+  <section class="insights-row" style="margin-top:1rem;">
+    <div class="ai-summary">
+      <h3>AI Weekly Summary</h3>
+      <p id="ai-summary">Your hydration improved mid-week and appears to correlate with mood increases on Tue/Wed.</p>
+      <button id="download-report" class="btn-download">Download Report (PDF)</button>
+    </div>
+
+    <div class="notes-panel">
+      <h3>Notes & Highlights</h3>
+      <ul id="trigger-list">
+        <li>Work stress (6)</li>
+        <li>Sleep loss (3)</li>
+        <li>Social time (2)</li>
+      </ul>
+    </div>
+  </section>
+</section>
+
+<script>
+  const profileStorageKeys = {
+    profile: "solaceUserProfile",
+    chats: "solaceSavedChats",
+    bookmarks: "solaceBookmarks",
+    posts: "solaceCommunityPosts",
+    favorites: "solaceAffirmationFavorites"
+  };
+
+  const profileElements = {
+    avatar: document.getElementById("profileAvatar"),
+    heroName: document.getElementById("profileHeroName"),
+    heroEmail: document.getElementById("profileHeroEmail"),
+    memberSince: document.getElementById("profileMemberSince"),
+    focusSummary: document.getElementById("profileFocusSummary"),
+    detailName: document.getElementById("profileDetailName"),
+    detailDisplayName: document.getElementById("profileDetailDisplayName"),
+    detailEmail: document.getElementById("profileDetailEmail"),
+    detailFocus: document.getElementById("profileDetailFocus"),
+    detailBio: document.getElementById("profileDetailBio"),
+    savedChatsCount: document.getElementById("savedChatsCount"),
+    bookmarksCount: document.getElementById("bookmarksCount"),
+    communityPostsCount: document.getElementById("communityPostsCount"),
+    favoriteAffirmationsCount: document.getElementById("favoriteAffirmationsCount")
+  };
+
+  function readJson(key, fallback) {
+    try {
+      const rawValue = localStorage.getItem(key);
+      if (rawValue === null) {
+        return fallback;
+      }
+      const parsed = JSON.parse(rawValue);
+      return parsed ?? fallback;
+    } catch (error) {
+      return fallback;
+    }
+  }
+
+  function getStoredProfile() {
+    const profile = readJson(profileStorageKeys.profile, null);
+    if (profile && typeof profile === "object") {
+      return profile;
+    }
+
+    return {
+      name: "",
+      displayName: "",
+      email: "",
+      wellnessFocus: "Building a steadier routine",
+      bio: "",
+      photoDataUrl: "",
+      createdAt: new Date().toISOString()
+    };
+  }
+
+  function getInitial(name) {
+    const source = String(name || "S").trim();
+    return source ? source.charAt(0).toUpperCase() : "S";
+  }
+
+  function formatDateLabel(isoString) {
+    const date = new Date(isoString || Date.now());
+    return date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+  }
+
+  function updateAvatar(target, profile) {
+    if (!target) {
+      return;
+    }
+
+    target.innerHTML = "";
+    if (profile.photoDataUrl) {
+      const image = document.createElement("img");
+      image.className = "profile-avatar-image";
+      image.src = profile.photoDataUrl;
+      image.alt = (profile.displayName || profile.name || "Profile photo") + " photo";
+      target.appendChild(image);
+      return;
+    }
+
+    target.textContent = getInitial(profile.displayName || profile.name || "S");
+  }
+
+  function renderProfile(profile) {
+    const displayName = profile.displayName || profile.name || "Solace Sphere Member";
+    updateAvatar(profileElements.avatar, profile);
+    profileElements.heroName.textContent = displayName;
+    profileElements.heroEmail.textContent = profile.bio || "Your bio will appear here once you add one.";
+    profileElements.memberSince.textContent = "Member since " + formatDateLabel(profile.createdAt);
+    profileElements.focusSummary.textContent = profile.wellnessFocus || "Building a steadier routine";
+
+    profileElements.detailName.textContent = profile.name || "Solace Sphere Member";
+    profileElements.detailDisplayName.textContent = displayName;
+    profileElements.detailEmail.textContent = profile.email || "Add your email and preferences to personalize your space.";
+    profileElements.detailFocus.textContent = profile.wellnessFocus || "Building a steadier routine.";
+    profileElements.detailBio.textContent = profile.bio || "Your bio will appear here once you save it.";
+  }
+
+  function renderStats() {
+    profileElements.savedChatsCount.textContent = readJson(profileStorageKeys.chats, []).length;
+    profileElements.bookmarksCount.textContent = readJson(profileStorageKeys.bookmarks, []).length;
+    profileElements.communityPostsCount.textContent = readJson(profileStorageKeys.posts, []).length;
+    profileElements.favoriteAffirmationsCount.textContent = readJson(profileStorageKeys.favorites, []).length;
+  }
+
+  const startingProfile = getStoredProfile();
+  renderProfile(startingProfile);
+  renderStats();
+</script>
+<script>
+  // Handle dropdown toggle click
+  document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+    toggle.addEventListener('click', function(e) {
+      e.preventDefault();
+    });
+  });
+
+  // Wire Personal Progress download button - Generate professional PDF
+  const downloadBtn = document.getElementById('download-report');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', function () {
+      const element = document.getElementById('personal-progress');
+      
+      const opt = {
+        margin: 15,
+        filename: 'Personal-Progress-Report.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+      };
+      
+      html2pdf().set(opt).from(element).save();
+    });
+  }
+</script>
+<script>
+  // Personal Progress: render mock charts + heatmap using Chart.js
+  (function(){
+    function lastNDates(n) {
+      const arr = [];
+      for (let i = n-1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        arr.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+      }
+      return arr;
+    }
+
+    // Mood Trend (30 days) - mock data
+    const moodLabels = lastNDates(30);
+    const moodData = moodLabels.map(() => (Math.random()*4 + 5).toFixed(1));
+    const moodCtx = document.getElementById('moodTrendChart');
+    if (moodCtx && window.Chart) {
+      new Chart(moodCtx.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: moodLabels,
+          datasets: [{
+            label: 'Mood Score',
+            data: moodData,
+            borderColor: '#5f8fe8',
+            backgroundColor: 'rgba(95,143,232,0.08)',
+            tension: 0.3,
+            pointRadius: 2
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { y: { min: 0, max: 10 } },
+          responsive: true,
+        }
+      });
+    }
+
+    // Correlation chart (sleep vs mood) - mock data
+    const corrLabels = lastNDates(14);
+    const sleepData = corrLabels.map(() => Math.round(Math.random()*3 + 6));
+    const corrMood = corrLabels.map(() => (Math.random()*3 + 5).toFixed(1));
+    const corrCtx = document.getElementById('correlationChart');
+    if (corrCtx && window.Chart) {
+      new Chart(corrCtx.getContext('2d'), {
+        data: {
+          labels: corrLabels,
+          datasets: [
+            { type: 'bar', label: 'Sleep Hours', data: sleepData, backgroundColor: '#f5c8a3' },
+            { type: 'line', label: 'Mood Score', data: corrMood, borderColor: '#5f8fe8', backgroundColor: 'transparent', tension: 0.3, yAxisID: 'y' }
+          ]
+        },
+        options: {
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            y: { min: 0, max: 10 }
+          },
+          responsive: true
+        }
+      });
+    }
+
+    // Simple heatmap: last 35 days (5 weeks) grid
+    const heatContainer = document.getElementById('habit-heatmap');
+    if (heatContainer) {
+      console.log('Personal Progress: found heatmap container', heatContainer);
+      heatContainer.innerHTML = '';
+      // ensure visible area if CSS not loaded yet
+      heatContainer.style.minHeight = '140px';
+      const grid = document.createElement('div');
+      grid.className = 'heatmap-grid';
+      for (let i = 34; i >= 0; i--) {
+        const day = new Date();
+        day.setDate(day.getDate() - i);
+        const level = Math.floor(Math.random()*4); // 0..3
+        const cell = document.createElement('div');
+        cell.className = 'heatmap-day heatmap-level-' + level;
+        const inner = document.createElement('div');
+        inner.className = 'day-inner';
+        inner.textContent = '';
+        cell.title = day.toLocaleDateString() + ' — habit checks: ' + level;
+        cell.appendChild(inner);
+        grid.appendChild(cell);
+      }
+      heatContainer.appendChild(grid);
+      console.log('Personal Progress: heatmap grid appended, children:', grid.childElementCount);
+    }
+  })();
+</script>
+<script src="../auth.js"></script>
+</body>
+</html>

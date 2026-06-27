@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Solace Sphere</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+  <img src="../images/logo.png" alt="Solace Sphere logo" class="logo">
+  <nav>
+    <a href="../landing page.html">Home</a>
+    <a href="../patient/dashboard.html">Dashboard</a>
+    
+    <!-- Dropdown Menu for Support & Tools -->
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Support & Tools</a>
+      <div class="dropdown-menu">
+        <a href="../patient/resources.html">Resources</a>
+        <a href="../patient/personal toolbox.html">Personal Toolbox</a>
+        <a href="../patient/community.html">Community</a>
+      </div>
+    </div>
+    
+    <a href="../patient/appointment.html">Appointments</a>
+    <a href="../patient/chatbot.html">Chatbot</a>
+    <a href="signup.html" class="signup-link">Sign Up</a>
+    <a href="../patient/profile.html" class="profile-link">Profile</a>
+  </nav>
+</header>
+<!-- ================= SIGN UP ================= -->
+<section class="form-section">
+  <div>
+    <h1>Welcome Back to Solace Sphere</h1>
+    <p style="margin-top:15px;">A calmer mind begins here.</p>
+    <img src="../images/signup.jfif" style="margin-top:20px;border-radius:20px;width:250px;height:250px;object-fit:cover;">
+  </div>
+
+  <div class="form-box auth-form-box">
+    <h3>SIGN UP</h3>
+    <input type="text" id="signupName" placeholder="Name">
+    <input type="email" id="signupEmail" placeholder="Email">
+    <p id="signupEmailStatus" class="field-status" hidden></p>
+    <div class="password-field-wrap">
+      <input type="password" id="signupPassword" placeholder="Password">
+      <button type="button" class="password-toggle-button" data-target="signupPassword" aria-label="Show password" title="Show password">👁</button>
+    </div>
+    <div class="password-strength-wrap">
+      <div class="password-strength-bar">
+        <div id="signupPasswordStrengthFill" class="password-strength-fill"></div>
+      </div>
+      <p id="signupPasswordStrengthText" class="field-status" hidden></p>
+    </div>
+    <div class="password-checklist" id="signupPasswordChecklist">
+      <div id="passwordRuleUppercase" class="password-rule">• Includes a capital letter</div>
+      <div id="passwordRuleNumber" class="password-rule">• Includes a number</div>
+      <div id="passwordRuleSpecial" class="password-rule">• Includes a special character like !</div>
+    </div>
+    <div class="password-field-wrap">
+      <input type="password" id="signupConfirmPassword" placeholder="Confirm Password">
+      <button type="button" class="password-toggle-button" data-target="signupConfirmPassword" aria-label="Show password" title="Show password">👁</button>
+    </div>
+    <p id="signupConfirmStatus" class="field-status" hidden></p>
+    <p class="password-hint">Password must include at least one capital letter, one number, and one special character like !</p>
+    <p id="signupMessage" class="auth-message" hidden></p>
+    <div style="text-align: center; margin-top: 20px;">
+      <button class="btn" id="createAccountButton" type="button">CREATE ACCOUNT</button>
+    </div>
+    <p style="text-align: center;">Already have an account? <a href="login.html" style="color: #5f8fe8; text-decoration: none; font-weight: 600;">Log in</a></p>
+  </div>
+</section>
+<div class="note">Take a deep breath. You’re doing your best.</div>
+<script>
+  const signupFields = {
+    name: document.getElementById("signupName"),
+    email: document.getElementById("signupEmail"),
+    password: document.getElementById("signupPassword"),
+    confirmPassword: document.getElementById("signupConfirmPassword"),
+    message: document.getElementById("signupMessage"),
+    button: document.getElementById("createAccountButton")
+  };
+
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  function isStrongPassword(password) {
+    return /[A-Z]/.test(password)
+      && /\d/.test(password)
+      && /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(password);
+  }
+
+  function setFieldStatus(element, text, type) {
+    element.hidden = !text;
+    element.textContent = text || "";
+    element.className = "field-status" + (type ? " field-status-" + type : "");
+  }
+
+  function updatePasswordRuleState(elementId, isValid) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    element.classList.toggle("password-rule-valid", !!isValid);
+  }
+
+  function updateSignupEmailStatus() {
+    const email = signupFields.email.value.trim();
+    const status = document.getElementById("signupEmailStatus");
+    if (!email) {
+      setFieldStatus(status, "", "");
+      return;
+    }
+    setFieldStatus(status, isValidEmail(email) ? "Email format looks good." : "Please enter a valid email address.", isValidEmail(email) ? "success" : "error");
+  }
+
+  function updateSignupPasswordStatus() {
+    const password = signupFields.password.value;
+    const strengthFill = document.getElementById("signupPasswordStrengthFill");
+    const strengthText = document.getElementById("signupPasswordStrengthText");
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(password);
+    const score = [hasUppercase, hasNumber, hasSpecial].filter(Boolean).length;
+
+    updatePasswordRuleState("passwordRuleUppercase", hasUppercase);
+    updatePasswordRuleState("passwordRuleNumber", hasNumber);
+    updatePasswordRuleState("passwordRuleSpecial", hasSpecial);
+
+    strengthFill.className = "password-strength-fill";
+    if (!password) {
+      strengthFill.style.width = "0%";
+      setFieldStatus(strengthText, "", "");
+      return;
+    }
+
+    if (score === 1) {
+      strengthFill.style.width = "33%";
+      strengthFill.classList.add("password-strength-weak");
+      setFieldStatus(strengthText, "Password strength: weak", "error");
+    } else if (score === 2) {
+      strengthFill.style.width = "66%";
+      strengthFill.classList.add("password-strength-medium");
+      setFieldStatus(strengthText, "Password strength: almost there", "warning");
+    } else {
+      strengthFill.style.width = "100%";
+      strengthFill.classList.add("password-strength-strong");
+      setFieldStatus(strengthText, "Password strength: strong", "success");
+    }
+  }
+
+  function updateSignupConfirmStatus() {
+    const status = document.getElementById("signupConfirmStatus");
+    const confirmPassword = signupFields.confirmPassword.value;
+    if (!confirmPassword) {
+      setFieldStatus(status, "", "");
+      return;
+    }
+    const matches = signupFields.password.value === confirmPassword;
+    setFieldStatus(status, matches ? "Passwords match." : "Passwords do not match yet.", matches ? "success" : "error");
+  }
+
+  document.querySelectorAll(".password-toggle-button").forEach(function (button) {
+    button.addEventListener("click", function () {
+      const target = document.getElementById(button.dataset.target);
+      if (!target) return;
+      const showPassword = target.type === "password";
+      target.type = showPassword ? "text" : "password";
+      button.textContent = showPassword ? "🙈" : "👁";
+      button.setAttribute("aria-label", showPassword ? "Hide password" : "Show password");
+      button.setAttribute("title", showPassword ? "Hide password" : "Show password");
+    });
+  });
+
+  signupFields.email.addEventListener("input", updateSignupEmailStatus);
+  signupFields.password.addEventListener("input", function () {
+    const checklist = document.getElementById("signupPasswordChecklist");
+    if (signupFields.password.value.length > 0) {
+      checklist.classList.add("visible");
+    } else {
+      checklist.classList.remove("visible");
+    }
+    updateSignupPasswordStatus();
+    updateSignupConfirmStatus();
+  });
+  signupFields.confirmPassword.addEventListener("input", updateSignupConfirmStatus);
+
+  function setSignupMessage(text, type) {
+    signupFields.message.hidden = !text;
+    signupFields.message.textContent = text || "";
+    signupFields.message.className = "auth-message" + (type ? " auth-message-" + type : "");
+  }
+
+  signupFields.button.addEventListener("click", function () {
+    const name = signupFields.name.value.trim();
+    const email = signupFields.email.value.trim();
+    const password = signupFields.password.value;
+    const confirmPassword = signupFields.confirmPassword.value;
+
+    if (!name || !email || !password || !confirmPassword) {
+      setSignupMessage("Please complete every field.", "error");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setSignupMessage("Please enter a valid email address.", "error");
+      return;
+    }
+
+    if (!isStrongPassword(password)) {
+      setSignupMessage("Password must include a capital letter, a number, and a special character like !", "error");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setSignupMessage("Passwords do not match.", "error");
+      return;
+    }
+
+    const profile = {
+      name: name,
+      displayName: name.split(" ")[0],
+      email: email,
+      password: password,
+      role: "patient",
+      wellnessFocus: "Building a steadier routine",
+      bio: "",
+      createdAt: new Date().toISOString()
+    };
+
+    // Try server signup first; if it fails, fall back to localStorage
+    fetch('../api/signup.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, email: email, password: password, role: 'patient' })
+    }).then(r => r.json()).then(result => {
+      if (result && result.ok && result.user) {
+        localStorage.setItem("solaceUserProfile", JSON.stringify(profile));
+        localStorage.setItem("solaceCurrentUser", JSON.stringify({
+          email: result.user.email,
+          displayName: result.user.displayName || profile.displayName,
+          role: result.user.role || 'patient',
+          loggedInAt: new Date().toISOString()
+        }));
+        setSignupMessage("Account created. Taking you to your dashboard...", "success");
+        window.setTimeout(function () { window.location.href = "../patient/dashboard.html"; }, 500);
+      } else {
+        // fallback to localStorage behavior if API rejects (e.g., DB not configured)
+        localStorage.setItem("solaceUserProfile", JSON.stringify(profile));
+        localStorage.setItem("solaceCurrentUser", JSON.stringify({
+          email: email,
+          displayName: profile.displayName,
+          role: "patient",
+          loggedInAt: new Date().toISOString()
+        }));
+        setSignupMessage("Account created (fallback). Taking you to your dashboard...", "success");
+        window.setTimeout(function () { window.location.href = "../patient/dashboard.html"; }, 500);
+      }
+    }).catch(() => {
+      // network error — fallback
+      localStorage.setItem("solaceUserProfile", JSON.stringify(profile));
+      localStorage.setItem("solaceCurrentUser", JSON.stringify({
+        email: email,
+        displayName: profile.displayName,
+        role: "patient",
+        loggedInAt: new Date().toISOString()
+      }));
+      setSignupMessage("Account created (offline). Taking you to your dashboard...", "success");
+      window.setTimeout(function () { window.location.href = "dashboard.html"; }, 500);
+    });
+  });
+</script>
+<script src="../auth.js"></script>
+</body>
+<script>
+  // Handle dropdown toggle click
+  document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+    toggle.addEventListener('click', function(e) {
+      e.preventDefault();
+    });
+  });
+</script>
+</html>
