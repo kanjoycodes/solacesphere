@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solace Sphere AI - Chatbot</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <img src="../images/logo.png" alt="Solace Sphere logo" class="logo">
+  <nav>
+        <a href="landing page.html">Home</a>
+        <a href="dashboard.html">Dashboard</a>
+    
+        <!-- Dropdown Menu for Support & Tools -->
+        <div class="dropdown">
+            <a href="#" class="dropdown-toggle">Support & Tools</a>
+            <div class="dropdown-menu">
+                <a href="resources.html">Resources</a>
+                <a href="personal toolbox.html">Personal Toolbox</a>
+                <a href="community.html">Community</a>
+            </div>
+        </div>
+    
+        <a href="appointment.html">Appointments</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a href="../auth/signup.html" class="signup-link">Sign Up</a>
+        <a href="profile.html" class="profile-link">Profile</a>
+  </nav>
+</header>
+<section class="chatbot-page">
+    <div class="chatbot-page-inner">
+                <!-- Solace Sphere AI -->
+        <div class="chatbot-box">
+
+            <div class="chatbot-header">
+                SOLACE SPHERE AI
+            </div>
+
+            <div class="chatbot-content chatbot-layout">
+                <aside class="chatbot-sidebar">
+                    <button id="newChatButton" class="new-chat-button" type="button">+ New Chat</button>
+
+                    <div class="chat-search-wrap">
+                        <input type="text" id="chatSearchInput" class="chat-search-input" placeholder="Search chats...">
+                    </div>
+
+                    <div id="chatList" class="chat-list"></div>
+                </aside>
+
+                <div class="chatbot-main">
+                    <div id="chatMessages" class="chatbot-messages"></div>
+
+                    <div class="prompts-label" id="promptsLabel">
+                        SUGGESTED PROMPTS
+                    </div>
+
+                    <div id="suggestedPrompts" class="suggested-prompts"></div>
+
+                    <div class="chatbot-input-wrap">
+                        <input type="text" id="chatInput" class="chatbot-input" placeholder="Type your message here...">
+
+                        <button id="refreshResponseButton" class="chatbot-send-button refresh-response-button" type="button" title="Regenerate last response">
+                            ↻
+                        </button>
+
+                        <button id="chatSendButton" class="chatbot-send-button" type="button">
+                            ➤
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+  </div>
+</section>
+<script>
+    const chatMessages = document.getElementById("chatMessages");
+    const suggestedPrompts = document.getElementById("suggestedPrompts");
+    const chatInput = document.getElementById("chatInput");
+    const chatSendButton = document.getElementById("chatSendButton");
+    const refreshResponseButton = document.getElementById("refreshResponseButton");
+    const chatList = document.getElementById("chatList");
+    const newChatButton = document.getElementById("newChatButton");
+    const chatSearchInput = document.getElementById("chatSearchInput");
+    const API_BASE = window.location.protocol === "file:" ? "http://localhost:8000" : "";
+    const CHAT_STORAGE_KEY = "solaceSavedChats";
+    const ACTIVE_CHAT_KEY = "solaceActiveChatId";
+    const RESPONSE_RATINGS_KEY = "solaceResponseRatings";
+    const initialAiMessage = "Hello! Welcome to your safe space. I'm SolaceSphere AI. How can I help you?";
+
+    function apiUrl(path) {
+        return API_BASE + path;
+    }
+
+    const chatHistory = [];
+    let conversations = [];
+    let activeChatId = null;
+    let conversationStarted = false;
+    let typingIndicatorBubble = null;
+    let responseRatings = JSON.parse(localStorage.getItem(RESPONSE_RATINGS_KEY) || "{}");
+
+    function showPrompts() {
+        const label = document.getElementById("promptsLabel");
+        if (label) label.style.display = "block";
+        if (suggestedPrompts) suggestedPrompts.style.display = "flex";
+    }
+
+    function hidePrompts() {
+        const label = document.getElementById("promptsLabel");
+        if (label) label.style.display = "none";
+        if (suggestedPrompts) suggestedPrompts.style.display = "none";
+    }
+
+    function createConversation() {
+        const now = new Date().toISOString();
+        return {
+            id: "chat-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8),
+            title: "New chat",
+            createdAt: now,
+            updatedAt: now,
+            messages: [
+                { role: "assistant", content: initialAiMessage }
+            ]
+        };
+    }
+
+    function loadConversations() {
+        try {
+            const stored = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "[]");
+            conversations = Array.isArray(stored) ? stored.filter(function (chat) {
+                return chat && Array.isArray(chat.messages) && chat.id;
+            }) : [];
+        } catch (error) {
+            conversations = [];
+        }
+
+        if (!conversations.length) {
+            const firstChat = createConversation();
+            conversations = [firstChat];
+            activeChatId = firstChat.id;
+            persistConversations();
+            return;
+        }
+
+        const storedActiveId = localStorage.getItem(ACTIVE_CHAT_KEY);
+        activeChatId = conversations.some(function (chat) { return chat.id === storedActiveId; })
+            ? storedActiveId
+            : conversations[0].id;
+    }
+
+    function persistConversations() {
+        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(conversations));
+        if (activeChatId) {
+            localStorage.setItem(ACTIVE_CHAT_KEY, activeChatId);
+        }
+    }
+
+    function getActiveConversation() {
+        return conversations.find(function (chat) {
+            return chat.id === activeChatId;
+        }) || null;
+    }
+
+    function syncChatHistoryFromActive() {
+        const activeChat = getActiveConversation();
+        chatHistory.length = 0;
+
+        if (!activeChat) {
+            return;
+        }
+
+        activeChat.messages.forEach(function (message) {
+            if (message.role === "user" || message.role === "assistant") {
+                chatHistory.push({ role: message.role, content: message.content });
+            }
+        });
+    }
+
+    function getConversationPreview(chat) {
+        const firstUserMessage = (chat.messages || []).find(function (message) {
+            return message.role === "user";
+        });
+        const fallbackMessage = (chat.messages || [])[0];
+        const previewSource = firstUserMessage || fallbackMessage || { content: "New chat" };
+        return String(previewSource.content || "New chat").replace(/\s+/g, " ").trim();
+    }
+
+    function getConversationTitle(chat) {
+        const firstUserMessage = (chat.messages || []).find(function (message) {
+            return message.role === "user" && String(message.content || "").trim();
+        });
+        if (!firstUserMessage) {
+            return chat.title || "New chat";
+        }
+
+        const trimmed = String(firstUserMessage.content).trim();
+        return trimmed.length > 38 ? trimmed.slice(0, 38) + "…" : trimmed;
+    }
+
+    function updateConversationMeta(chat) {
+        chat.title = getConversationTitle(chat);
+        chat.updatedAt = new Date().toISOString();
+    }
+
+    function renderChatList() {
+        const query = String(chatSearchInput.value || "").trim().toLowerCase();
+        const sortedChats = conversations.slice().sort(function (a, b) {
+            return new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0);
+        });
+
+        chatList.innerHTML = "";
+
+        const filteredChats = sortedChats.filter(function (chat) {
+            const haystack = (getConversationTitle(chat) + " " + getConversationPreview(chat)).toLowerCase();
+            return !query || haystack.includes(query);
+        });
+
+        if (!filteredChats.length) {
+            const empty = document.createElement("div");
+            empty.className = "chat-list-empty";
+            empty.textContent = "No chats found.";
+            chatList.appendChild(empty);
+            return;
+        }
+
+        filteredChats.forEach(function (chat) {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = "chat-list-item" + (chat.id === activeChatId ? " active-chat" : "");
+
+            const title = document.createElement("div");
+            title.className = "chat-list-title";
+            title.textContent = getConversationTitle(chat);
+
+            const preview = document.createElement("div");
+            preview.className = "chat-list-preview";
+            preview.textContent = getConversationPreview(chat);
+
+            item.appendChild(title);
+            item.appendChild(preview);
+            item.addEventListener("click", function () {
+                openConversation(chat.id);
+            });
+            chatList.appendChild(item);
+        });
+    }
+
+    function renderActiveConversation() {
+        const activeChat = getActiveConversation();
+        chatMessages.innerHTML = "";
+        hideTypingIndicator();
+
+        if (!activeChat) {
+            return;
+        }
+
+        activeChat.messages.forEach(function (message, index) {
+            addMessage(message.content, message.role === "user" ? "user" : "ai", { messageIndex: index });
+        });
+
+        conversationStarted = activeChat.messages.some(function (message) {
+            return message.role === "user";
+        });
+
+        if (conversationStarted) {
+            hidePrompts();
+        } else {
+            showPrompts();
+            loadAdaptivePrompts();
+        }
+
+        syncChatHistoryFromActive();
+    }
+
+    function openConversation(chatId) {
+        activeChatId = chatId;
+        persistConversations();
+        renderChatList();
+        renderActiveConversation();
+        chatInput.focus();
+    }
+
+    function startNewChat() {
+        const newConversation = createConversation();
+        conversations.unshift(newConversation);
+        activeChatId = newConversation.id;
+        persistConversations();
+        renderChatList();
+        renderActiveConversation();
+    }
+
+    const fallbackPrompts = [
+        "Help me manage my stress",
+        "Guide me through a breathing exercise",
+        "I feel overwhelmed. What can I do now?"
+    ];
+
+    function getSignalScores() {
+        const resourceInteractions = JSON.parse(localStorage.getItem("solaceResourceInteractions") || "{}");
+        const affirmationInteractions = JSON.parse(localStorage.getItem("solaceAffirmationInteractions") || "{}");
+        const bookmarks = JSON.parse(localStorage.getItem("solaceBookmarks") || "[]");
+        const communityPosts = JSON.parse(localStorage.getItem("solaceCommunityPosts") || "[]");
+
+        return {
+            anxiety: (resourceInteractions["category:Anxiety"] || 0) * 2,
+            stress: (resourceInteractions["category:Stress"] || 0) * 2,
+            sleep: (resourceInteractions["category:Sleep"] || 0) * 2 + (affirmationInteractions.rest || 0) * 2,
+            mindfulness: (resourceInteractions["category:Mindfulness"] || 0) * 2 + (affirmationInteractions.calm || 0) * 2,
+            depression: (resourceInteractions["category:Depression"] || 0) * 2 + (affirmationInteractions["self-worth"] || 0) * 2,
+            community: Array.isArray(communityPosts) ? communityPosts.length * 2 : 0,
+            general: Array.isArray(bookmarks) ? bookmarks.length + 1 : 1
+        };
+    }
+
+    function saveResponseRatings() {
+        localStorage.setItem(RESPONSE_RATINGS_KEY, JSON.stringify(responseRatings));
+    }
+
+    function copyToClipboard(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(text);
+        }
+
+        return new Promise(function (resolve, reject) {
+            const helper = document.createElement("textarea");
+            helper.value = text;
+            helper.setAttribute("readonly", "");
+            helper.style.position = "fixed";
+            helper.style.opacity = "0";
+            document.body.appendChild(helper);
+            helper.select();
+
+            try {
+                document.execCommand("copy");
+                resolve();
+            } catch (error) {
+                reject(error);
+            } finally {
+                document.body.removeChild(helper);
+            }
+        });
+    }
+
+    function getMessageRating(messageIndex) {
+        if (!activeChatId) {
+            return "";
+        }
+        return String(responseRatings[activeChatId + ":" + messageIndex] || "");
+    }
+
+    function setMessageRating(messageIndex, rating) {
+        if (!activeChatId) {
+            return;
+        }
+
+        const key = activeChatId + ":" + messageIndex;
+        if (responseRatings[key] === rating) {
+            delete responseRatings[key];
+        } else {
+            responseRatings[key] = rating;
+        }
+        saveResponseRatings();
+        renderActiveConversation();
+    }
+
+    function findPreviousUserMessage(chat, fromIndex) {
+        for (let index = fromIndex - 1; index >= 0; index -= 1) {
+            if ((chat.messages[index] || {}).role === "user") {
+                return { content: chat.messages[index].content, index: index };
+            }
+        }
+        return null;
+    }
+
+    async function requestAssistantReply(text) {
+        const response = await fetch(apiUrl("/api/chat.php"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                message: text,
+                signals: getSignalScores(),
+                history: chatHistory
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error("Chat API failed");
+        }
+
+        const payload = await response.json();
+        return {
+            reply: payload.reply || localFallbackReply(text),
+            prompts: payload.prompts || fallbackPrompts
+        };
+    }
+
+    async function regenerateResponse(messageIndex) {
+        const activeChat = getActiveConversation();
+        if (!activeChat) {
+            return;
+        }
+
+        const targetMessage = activeChat.messages[messageIndex];
+        if (!targetMessage || targetMessage.role !== "assistant") {
+            return;
+        }
+
+        const previousUser = findPreviousUserMessage(activeChat, messageIndex);
+        if (!previousUser || !String(previousUser.content || "").trim()) {
+            return;
+        }
+
+        activeChat.messages.splice(messageIndex, 1);
+        updateConversationMeta(activeChat);
+        persistConversations();
+        renderChatList();
+        renderActiveConversation();
+
+        setSendingState(true);
+        showTypingIndicator();
+
+        syncChatHistoryFromActive();
+        const promptText = String(previousUser.content);
+
+        try {
+            const payload = await requestAssistantReply(promptText);
+            hideTypingIndicator();
+            activeChat.messages.push({ role: "assistant", content: payload.reply });
+            updateConversationMeta(activeChat);
+            persistConversations();
+            renderChatList();
+            renderActiveConversation();
+            renderPromptChips(payload.prompts);
+        } catch (error) {
+            const fallback = localFallbackReply(promptText);
+            hideTypingIndicator();
+            activeChat.messages.push({ role: "assistant", content: fallback });
+            updateConversationMeta(activeChat);
+            persistConversations();
+            renderChatList();
+            renderActiveConversation();
+            renderPromptChips(fallbackPrompts);
+        } finally {
+            hideTypingIndicator();
+            setSendingState(false);
+            chatInput.focus();
+        }
+    }
+
+    function addActionButton(container, icon, title, clickHandler, className, disabled) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "chat-action-btn" + (className ? " " + className : "");
+        button.innerHTML = '<span class="chat-action-icon" aria-hidden="true">' + icon + '</span>';
+        button.title = title;
+        button.setAttribute("aria-label", title);
+        button.disabled = Boolean(disabled);
+        button.addEventListener("click", clickHandler);
+        container.appendChild(button);
+    }
+
+    function appendMessageActions(bubble, text, sender, options) {
+        const actions = document.createElement("div");
+        actions.className = "chat-message-actions";
+        const messageIndex = options && typeof options.messageIndex === "number" ? options.messageIndex : -1;
+        const activeChat = getActiveConversation();
+
+        if (sender === "user") {
+            addActionButton(actions, "⧉", "Copy prompt", function () {
+                copyToClipboard(text).catch(function () {});
+            });
+            addActionButton(actions, "✎", "Edit prompt", function () {
+                chatInput.value = text;
+                chatInput.focus();
+            });
+        } else {
+            const canRefresh = activeChat && messageIndex >= 0 && Boolean(findPreviousUserMessage(activeChat, messageIndex));
+            addActionButton(actions, "⧉", "Copy response", function () {
+                copyToClipboard(text).catch(function () {});
+            });
+            addActionButton(actions, "↻", "Refresh response", function () {
+                regenerateResponse(messageIndex);
+            }, "", !canRefresh);
+
+            const currentRating = getMessageRating(messageIndex);
+            addActionButton(actions, "👍", "Rate response helpful", function () {
+                setMessageRating(messageIndex, "up");
+            }, currentRating === "up" ? "is-active" : "");
+            addActionButton(actions, "👎", "Rate response not helpful", function () {
+                setMessageRating(messageIndex, "down");
+            }, currentRating === "down" ? "is-active" : "");
+        }
+
+        bubble.appendChild(actions);
+    }
+
+    function addMessage(text, sender, options) {
+        const bubble = document.createElement("div");
+        bubble.className = "chat-bubble " + (sender === "user" ? "user-bubble" : "ai-bubble");
+        if (sender === "ai") {
+            bubble.innerHTML = formatAiMessage(text);
+        } else {
+            bubble.textContent = text;
+        }
+        appendMessageActions(bubble, text, sender, options);
+        chatMessages.appendChild(bubble);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+        hideTypingIndicator();
+
+        const bubble = document.createElement("div");
+        bubble.className = "chat-bubble ai-bubble typing-bubble";
+        bubble.innerHTML = "<span class=\"typing-dots\"><span></span><span></span><span></span></span>";
+
+        chatMessages.appendChild(bubble);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        typingIndicatorBubble = bubble;
+    }
+
+    function hideTypingIndicator() {
+        if (typingIndicatorBubble && typingIndicatorBubble.parentNode) {
+            typingIndicatorBubble.parentNode.removeChild(typingIndicatorBubble);
+        }
+        typingIndicatorBubble = null;
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    function formatInline(text) {
+        const escaped = escapeHtml(text);
+        return escaped.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    }
+
+    function formatAiMessage(text) {
+        const lines = String(text || "").split(/\r?\n/);
+        let html = "";
+        let listType = null;
+
+        function closeList() {
+            if (listType === "ol") html += "</ol>";
+            if (listType === "ul") html += "</ul>";
+            listType = null;
+        }
+
+        lines.forEach(function (rawLine) {
+            const line = rawLine.trim();
+
+            if (!line) {
+                closeList();
+                return;
+            }
+
+            const orderedMatch = line.match(/^\d+\.\s+(.*)$/);
+            if (orderedMatch) {
+                if (listType !== "ol") {
+                    closeList();
+                    html += "<ol>";
+                    listType = "ol";
+                }
+                html += "<li>" + formatInline(orderedMatch[1]) + "</li>";
+                return;
+            }
+
+            const unorderedMatch = line.match(/^[-*]\s+(.*)$/);
+            if (unorderedMatch) {
+                if (listType !== "ul") {
+                    closeList();
+                    html += "<ul>";
+                    listType = "ul";
+                }
+                html += "<li>" + formatInline(unorderedMatch[1]) + "</li>";
+                return;
+            }
+
+            closeList();
+            html += "<p>" + formatInline(line) + "</p>";
+        });
+
+        closeList();
+        return html || "<p>I’m here with you.</p>";
+    }
+
+    function renderPromptChips(prompts) {
+        if (conversationStarted) return;
+        suggestedPrompts.innerHTML = "";
+        (prompts && prompts.length ? prompts : fallbackPrompts).slice(0, 3).forEach(function (promptText) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "prompt-chip";
+            button.textContent = promptText;
+            button.addEventListener("click", function () {
+                sendMessage(promptText);
+            });
+            suggestedPrompts.appendChild(button);
+        });
+    }
+
+    function localFallbackReply(message) {
+        const text = String(message).toLowerCase();
+        if (text.includes("panic") || text.includes("anx") || text.includes("breath")) {
+            return "It sounds like your nervous system is in overdrive right now, and that can feel intense.\n\n1. **Regulate your breathing:** Inhale for 4, hold 4, exhale for 6. Repeat for 6 rounds.\n2. **Ground your senses:** Name 5 things you see, 4 you feel, 3 you hear, 2 you smell, and 1 you taste.\n3. **Lower pressure:** Tell yourself: ‘I only need to get through the next 10 minutes.’ Then sip water and sit somewhere stable.\n\nWould you like a 2-minute guided version you can follow line by line?";
+        }
+        if (text.includes("sleep") || text.includes("insomnia")) {
+            return "Sleep struggles can be exhausting, especially when your mind won’t switch off.\n\n1. **Reduce stimulation now:** Dim lights and stop scrolling for at least 20 minutes.\n2. **Body cue for sleep:** Breathe in for 4 and out for 8 for 2 minutes to slow arousal.\n3. **Brain offload:** Write down tomorrow’s top 3 tasks so your mind doesn’t keep rehearsing them.\n\nDo you want a simple 20-minute wind-down routine for tonight?";
+        }
+        if (text.includes("stress") || text.includes("overwhelm")) {
+            return "Feeling overwhelmed makes everything feel urgent at once, and that’s really hard to carry.\n\n1. **Physical reset:** Unclench your jaw, drop your shoulders, and take 3 slow breaths.\n2. **Priority filter:** Ask: ‘What absolutely must be done today?’ Pick one task only.\n3. **10-minute action:** Set a timer for 10 minutes and start that single task without judging progress.\n\nWant help deciding the one task if you tell me what’s on your plate?";
+        }
+        if (text.includes("graduate") || text.includes("deadline") || text.includes("finish on time") || text.includes("final year") || text.includes("project")) {
+            return "That fear about graduating on time is valid, and you do not need to solve the whole semester in one step.\n\n1. **Define today's target:** Pick one concrete deliverable you can finish today (for example, one section draft or one diagram).\n2. **Use two focus blocks:** Do 25 minutes work, 5 minutes rest, then repeat once. Keep your phone away during both blocks.\n3. **Protect momentum:** At the end, write tomorrow's first task in one sentence so restarting is easier.\n\nIf you tell me what part is due next, I can help break it into a realistic plan.";
+        }
+        return "Thank you for sharing that — you don’t have to figure it all out at once.\n\n1. **Name the feeling:** In one word (e.g., anxious, drained, sad).\n2. **Scan your body:** Notice where you feel tension (chest, stomach, shoulders).\n3. **Take one stabilizing step:** Water, slow breathing, or a brief walk.\n\nIf you share what feels hardest right now, I’ll give you a focused step-by-step plan.";
+    }
+
+    async function loadAdaptivePrompts() {
+        try {
+            const response = await fetch(apiUrl("/api/prompts.php"), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ signals: getSignalScores() })
+            });
+            if (!response.ok) {
+                renderPromptChips(fallbackPrompts);
+                return;
+            }
+            const payload = await response.json();
+            renderPromptChips(payload.prompts || fallbackPrompts);
+        } catch (error) {
+            renderPromptChips(fallbackPrompts);
+        }
+    }
+
+    function setSendingState(isSending) {
+        chatSendButton.disabled = isSending;
+        refreshResponseButton.disabled = isSending;
+        chatInput.disabled = isSending;
+        chatSendButton.textContent = isSending ? "..." : "➤";
+    }
+
+    async function sendMessage(prefilledText) {
+        const text = (typeof prefilledText === "string" ? prefilledText : chatInput.value).trim();
+        if (!text) {
+            chatInput.focus();
+            return;
+        }
+
+        const activeChat = getActiveConversation();
+        if (!activeChat) {
+            return;
+        }
+
+        const userIndex = activeChat.messages.length;
+        addMessage(text, "user", { messageIndex: userIndex });
+        activeChat.messages.push({ role: "user", content: text });
+        updateConversationMeta(activeChat);
+        chatHistory.push({ role: "user", content: text });
+        chatInput.value = "";
+        if (!conversationStarted) {
+            conversationStarted = true;
+            hidePrompts();
+        }
+        persistConversations();
+        renderChatList();
+        setSendingState(true);
+        showTypingIndicator();
+
+        try {
+            const payload = await requestAssistantReply(text);
+            const reply = payload.reply;
+            hideTypingIndicator();
+            const assistantIndex = activeChat.messages.length;
+            addMessage(reply, "ai", { messageIndex: assistantIndex });
+            activeChat.messages.push({ role: "assistant", content: reply });
+            updateConversationMeta(activeChat);
+            chatHistory.push({ role: "assistant", content: reply });
+            persistConversations();
+            renderChatList();
+            renderPromptChips(payload.prompts);
+        } catch (error) {
+            const fallback = localFallbackReply(text);
+            hideTypingIndicator();
+            const assistantIndex = activeChat.messages.length;
+            addMessage(fallback, "ai", { messageIndex: assistantIndex });
+            activeChat.messages.push({ role: "assistant", content: fallback });
+            updateConversationMeta(activeChat);
+            chatHistory.push({ role: "assistant", content: fallback });
+            persistConversations();
+            renderChatList();
+            renderPromptChips(fallbackPrompts);
+        } finally {
+            hideTypingIndicator();
+            setSendingState(false);
+            chatInput.focus();
+        }
+    }
+
+    chatSendButton.addEventListener("click", function () {
+        sendMessage();
+    });
+
+    chatInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+    refreshResponseButton.addEventListener("click", function () {
+        const activeChat = getActiveConversation();
+        if (!activeChat) {
+            return;
+        }
+
+        for (let index = activeChat.messages.length - 1; index >= 0; index -= 1) {
+            if ((activeChat.messages[index] || {}).role === "assistant") {
+                regenerateResponse(index);
+                break;
+            }
+        }
+    });
+
+    newChatButton.addEventListener("click", function () {
+        startNewChat();
+    });
+
+    chatSearchInput.addEventListener("input", function () {
+        renderChatList();
+    });
+
+    loadConversations();
+    renderChatList();
+    renderActiveConversation();
+</script>
+<script>
+    // Handle dropdown toggle click
+    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+        });
+    });
+</script>
+<script src="../auth.js"></script>
+</body>
+</html>
+
