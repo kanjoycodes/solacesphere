@@ -1,9 +1,9 @@
 (function () {
   const STORAGE_KEY = "solaceCurrentUser";
   const ROLE_HOME = {
-    patient: "dashboard.html",
-    professional: "clinician-dashboard.html",
-    admin: "admin-dashboard.html"
+    patient: "/patient/dashboard.html",
+    professional: "/professional/clinician-dashboard.html",
+    admin: "/admin/admin-dashboard.html"
   };
 
   const PUBLIC_PAGES = new Set([
@@ -74,7 +74,7 @@
   }
 
   function redirectToLogin(nextPage) {
-    const url = nextPage ? `login.html?next=${encodeURIComponent(nextPage)}` : "login.html";
+    const url = nextPage ? `/auth/login.html?next=${encodeURIComponent(nextPage)}` : "/auth/login.html";
     window.location.replace(url);
   }
 
@@ -112,7 +112,7 @@
     if (!currentUser) return;
 
     // Replace Profile link with a dropdown split into sections
-    const profileLink = nav.querySelector('a[href="profile.html"]');
+    const profileLink = nav.querySelector('a.profile-link') || nav.querySelector('a[href="profile.html"]');
     if (profileLink && !profileLink.closest('.dropdown') && !nav.querySelector('.dropdown[data-generated]')) {
       const userName = (currentUser && (currentUser.displayName || currentUser.name || currentUser.username)) ? (currentUser.displayName || currentUser.name || currentUser.username) : 'Profile';
 
@@ -161,7 +161,7 @@
       logout.addEventListener('click', function (e) {
         e.preventDefault();
         localStorage.removeItem(STORAGE_KEY);
-        window.location.replace('index.html');
+        window.location.replace('/landing page.html');
       });
     }
   }
